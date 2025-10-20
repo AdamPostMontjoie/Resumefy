@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const buttonStyle = {
   width: '100%',
@@ -14,8 +15,16 @@ const buttonStyle = {
   transition: 'all 0.3s'
 };
 
-function ResumeGenerationPage({ onLogout, onProfile }) {
+function ResumeGenerationPage(){
   const [jobDesc, setJobDesc] = useState('');
+    const navigate = useNavigate();
+
+  const goToLogin = () => {
+    navigate("/login");
+  };
+    const editProfile = () => {
+    navigate("/profile");
+  };
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
@@ -25,8 +34,8 @@ function ResumeGenerationPage({ onLogout, onProfile }) {
           <div><h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700' }}>Resumefy</h1></div>
         </div>
         <div style={{ display: 'flex', gap: '15px' }}>
-          <button onClick={onLogout} style={{ padding: '10px 24px', border: '2px solid #e5e7eb', borderRadius: '10px', background: 'white', cursor: 'pointer', fontSize: '1rem' }}>Logout</button>
-          <div onClick={onProfile} style={{ width: '45px', height: '45px', borderRadius: '12px', background: 'linear-gradient(135deg, #372414, #372414)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', fontSize: '2.1rem' }}>🧛🏻‍♂️</div>
+          <button onClick={goToLogin} style={{ padding: '10px 24px', border: '2px solid #e5e7eb', borderRadius: '10px', background: 'white', cursor: 'pointer', fontSize: '1rem' }}>Logout</button>
+          <div onClick={editProfile} style={{ width: '45px', height: '45px', borderRadius: '12px', background: 'linear-gradient(135deg, #372414, #372414)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', fontSize: '2.1rem' }}>🧛🏻‍♂️</div>
         </div>
       </div>
 
@@ -43,7 +52,7 @@ function ResumeGenerationPage({ onLogout, onProfile }) {
           <div style={{ width: '320px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '24px', border: '1px solid #e5e7eb' }}>
               <h3 style={{ margin: '0 0 15px 0', fontSize: '1.1rem', fontWeight: '600' }}>Quick Actions</h3>
-              <button onClick={onProfile} style={{ width: '100%', padding: '12px', border: '2px solid #e5e7eb', borderRadius: '10px', background: 'white', marginBottom: '12px', cursor: 'pointer' }}>📝 Edit Profile</button>
+              <button onClick={editProfile} style={{ width: '100%', padding: '12px', border: '2px solid #e5e7eb', borderRadius: '10px', background: 'white', marginBottom: '12px', cursor: 'pointer' }}>📝 Edit Profile</button>
               <button style={{ ...buttonStyle, padding: '16px' }}>✨ Generate Resume</button>
             </div>
             <div style={{ backgroundColor: '#eff6ff', borderRadius: '16px', padding: '20px', border: '1px solid #dbeafe' }}>
