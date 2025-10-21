@@ -1,4 +1,4 @@
-/* backend/server.js
+// backend/server.js
 
 const express = require('express');
 const cors = require('cors');
@@ -67,7 +67,6 @@ app.put('/profile/:id', async (req, res) => {
 });
 
 // Start server
-<<<<<<< HEAD
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); */
 
@@ -231,7 +230,3 @@ app.post('/api/generate', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
-=======
-const PORT = 5001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
->>>>>>> 1c377b6a9de2c6a88fa2d068e328dcf4a90ee683
