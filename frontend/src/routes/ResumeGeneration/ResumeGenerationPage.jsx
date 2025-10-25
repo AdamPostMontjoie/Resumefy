@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
 import { useEffect } from "react";
+import { doSignOut } from "../../auth/auth";
 
 const buttonStyle = {
   width: '100%',
@@ -32,7 +33,8 @@ function ResumeGenerationPage(){
     loginCheck()
   },[userLoggedIn, loading,navigate])
 
-  const goToLogin = () => {
+  const handleLogout = () => {
+    doSignOut()
     navigate("/login");
   };
   //goes to profile page
@@ -52,7 +54,7 @@ function ResumeGenerationPage(){
           <div><h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700' }}>Resumefy</h1></div>
         </div>
         <div style={{ display: 'flex', gap: '15px' }}>
-          <button onClick={goToLogin} style={{ padding: '10px 24px', border: '2px solid #e5e7eb', borderRadius: '10px', background: 'white', cursor: 'pointer', fontSize: '1rem' }}>Logout</button>
+          <button onClick={handleLogout} style={{ padding: '10px 24px', border: '2px solid #e5e7eb', borderRadius: '10px', background: 'white', cursor: 'pointer', fontSize: '1rem' }}>Logout</button>
           <div onClick={editProfile} style={{ width: '45px', height: '45px', borderRadius: '12px', background: 'linear-gradient(135deg, #372414, #372414)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', fontSize: '2.1rem' }}>🧛🏻‍♂️</div>
         </div>
       </div>

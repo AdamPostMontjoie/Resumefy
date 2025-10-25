@@ -16,28 +16,32 @@ function RegisterPage() {
   //direct out if already logged in
   useEffect(()=>{
         function checkAuth(){
-          if(userLoggedIn){
+          if(userLoggedIn && !loading){
             navigate('/resumegeneration')
           }
         }
         checkAuth()
-    },[userLoggedIn,navigate])
+    },[userLoggedIn,navigate,loading])
 
   //creates user in firebase auth
   const handleRegister = async () => {
+    let navigated = false;
         setLoading(true);
         setError('');
         try {
             let cred = await doCreateUserWithEmailAndPassword(email,password)
             console.log(cred.user)
             createUserObject(cred)
+            navigated = true;
             navigate("/profile");
         } catch (err) {
           setError(err.code === 'auth/invalid-email' ? 'This email is not valid' : 
                    err.code === 'auth/email-already-exists' ? 'Email already in use' :
                    err.code === 'auth/weak-password' ? 'Password too weak' : 'Authentication failed');
         } finally {
-          setLoading(false);
+          if (!navigated) { 
+            setLoading(false);
+          }
         }
   };
 
@@ -49,7 +53,7 @@ function RegisterPage() {
         email: cred.user.email
       }
       const result = await axios.post('http://localhost:5005/register',body)
-      console.lof(result)
+      console.log(result)
     } catch (error) {
       console.log(error)
     }
@@ -86,7 +90,7 @@ function RegisterPage() {
               <label className="form-label">Confirm Password</label>
               <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm Password" className="input-style" />
             </div>
-            <button onClick={handleRegister} disabled={loading} className="button-style">{loading ? '...' : ( 'Sign In')}</button>
+            <button onClick={handleRegister} disabled={loading} className="button-style">{loading ? '...' : ( 'Sign Up')}</button>
           </div>
         </div>
       </div>
