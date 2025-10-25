@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/useAuth";
+import { useEffect } from "react";
 
 const buttonStyle = {
   width: '100%',
@@ -16,15 +18,31 @@ const buttonStyle = {
 };
 
 function ResumeGenerationPage(){
+  const {userLoggedIn,loading} = useAuth()
   const [jobDesc, setJobDesc] = useState('');
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+
+  //if not logged in, redirect to login page
+  useEffect(()=>{
+    function loginCheck(){
+      if(!userLoggedIn && !loading){
+        navigate('/login')
+      }
+    }
+    loginCheck()
+  },[userLoggedIn, loading,navigate])
 
   const goToLogin = () => {
     navigate("/login");
   };
-    const editProfile = () => {
+  //goes to profile page
+  const editProfile = () => {
     navigate("/profile");
   };
+  //this handles the resume generation
+  const handleGenerate = ()=>{
+    console.log("do the logic here")
+  }
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
@@ -53,7 +71,7 @@ function ResumeGenerationPage(){
             <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '24px', border: '1px solid #e5e7eb' }}>
               <h3 style={{ margin: '0 0 15px 0', fontSize: '1.1rem', fontWeight: '600' }}>Quick Actions</h3>
               <button onClick={editProfile} style={{ width: '100%', padding: '12px', border: '2px solid #e5e7eb', borderRadius: '10px', background: 'white', marginBottom: '12px', cursor: 'pointer' }}>📝 Edit Profile</button>
-              <button style={{ ...buttonStyle, padding: '16px' }}>✨ Generate Resume</button>
+              <button onClick={handleGenerate} style={{ ...buttonStyle, padding: '16px' }}>Generate Resume</button>
             </div>
             <div style={{ backgroundColor: '#eff6ff', borderRadius: '16px', padding: '20px', border: '1px solid #dbeafe' }}>
               <div style={{ fontSize: '2rem', marginBottom: '10px' }}>💡</div>

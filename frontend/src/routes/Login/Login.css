@@ -1,0 +1,144 @@
+.login-page-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #F7EBDF 0%, #EEEEF0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(20px, -20px);
+  }
+}
+
+.background-shape {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: 50%;
+  top: 10%;
+  left: 10%;
+  animation: float 20s infinite;
+}
+
+.content-wrapper {
+  display: flex;
+  gap: 80px;
+  max-width: 1200px;
+  align-items: center;
+  z-index: 1;
+}
+
+.branding-section {
+  flex: 1;
+  color: black;
+}
+
+.branding-title {
+  font-size: 4.5rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.branding-subtitle {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  margin: 15px 0;
+}
+
+.branding-description {
+  font-size: 1.25rem;
+  margin: 30px 0;
+}
+
+.empty-flex-div {
+  display: flex;
+  gap: 30px;
+}
+
+.form-card {
+  background-color: white;
+  border-radius: 24px;
+  padding: 50px 45px;
+  box-shadow: 0 50px 100px rgba(0, 0, 0, 0.3);
+  width: 450px;
+}
+
+.error-message {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 24px;
+  color: #991b1b;
+}
+
+.form-fields-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-label {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.input-style {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 1rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.input-style:focus {
+  border-color: #667eea;
+}
+
+.button-style {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #372414 0%, #372414 100%);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s;
+}
+
+.separator-text {
+  text-align: center;
+  margin: 10px 0;
+  font-size: 1rem;
+  color: #372414;
+}
+
+.register-button {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s;
+  background: white;
+  color: #372414;
+  border: 2px solid #372414;
+}
