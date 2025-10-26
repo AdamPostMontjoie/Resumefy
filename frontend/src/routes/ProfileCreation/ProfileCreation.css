@@ -1,0 +1,215 @@
+/* --- Page Layout --- */
+.page-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #111827;
+  padding: 2rem;
+}
+
+.form {
+  width: 100%;
+  max-width: 800px;
+  background-color: #ffffffff;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  transition: transform 0.2s ease;
+}
+
+.title {
+  color: #111827;
+  font-size: 2.25rem;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
+/* --- Collapsible Section --- */
+.collapsible-section {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background-color: #f9fafb;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.collapsible-button {
+  width: 100%;
+  background-color: #667eea;
+  border: none;
+  padding: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1rem;
+  transition: background-color 0.2s ease;
+}
+
+.collapsible-button:hover {
+  background-color: #5a6dda;
+}
+
+.collapsible-content {
+  padding: 1.25rem;
+  background-color: #ffffff;
+}
+
+/* --- Input Fields & Layout --- */
+.input-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.input {
+  background-color: #f9fafb;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  font-size: 1rem;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.textarea {
+  background-color: #f9fafb;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 100px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.input-half {
+  flex: 1 1 48%;
+  min-width: 240px;
+}
+
+.input-full {
+  flex: 1 1 100%;
+}
+
+.input-flex {
+  flex: 1;
+}
+
+/* --- List Items (Skills, Certs, etc.) --- */
+.list-item-container {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.work-experience-item {
+  border: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* --- Buttons --- */
+.remove-button {
+  color: #dc2626;
+  font-weight: 500;
+  text-decoration: underline;
+  font-size: 0.9rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  align-self: flex-end;
+}
+
+.remove-button:hover {
+  color: #991b1b;
+}
+
+.add-button {
+  background-color: #667eea;
+  color: white;
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 0.75rem;
+  align-self: flex-start;
+  transition: background-color 0.2s ease;
+}
+
+.add-button:hover {
+  background-color: #5a6dda;
+}
+
+.submit-button {
+  background-color: #111827;
+  color: white;
+  padding: 0.9rem 2rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  align-self: center;
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.submit-button:hover {
+  background-color: #374151;
+}
+
+.submit-button:active {
+  transform: scale(0.98);
+}
+
+.clear-button {
+  background-color: #dc2626;
+  color: white;
+  padding: 0.9rem 2rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  align-self: center;
+  margin-top: 0.75rem;
+  font-size: 1.1rem;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.clear-button:hover {
+  background-color: #b91c1c;
+}
+
+.clear-button:active {
+  transform: scale(0.98);
+}
