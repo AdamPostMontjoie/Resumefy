@@ -111,18 +111,24 @@ Preserve truth; active voice; no first-person. Return a JSON object containing k
 }
 Do NOT include markdown or extra text.`;
 
-async function resumeGeneration(jobDescription, jobResponsibilities, userProfile) {
+async function resumeGeneration(jobDescription, jobResponsibilities, userId) {
+
+  // Get user profile
+  const userRef = db.collection('users').doc(userId);
+  const snap = await userRef.get();
+  if (!snap.exists) return res.status(404).json({ error: 'User not found' });
+  const profile = snap.data().profile;
+
   const prompt = `You are creating a tailored resume.
-Job Description: ${jobDescription}
-Job Responsibilities: ${jobResponsibilities}
-User Profile Summary:
-Name: ${userProfile.personal?.name || "N/A"}
-Skills: ${userProfile.skills?.join(", ") || "None"}
-Work Experience: ${userProfile.work?.map(w => w.position || "").join(", ")}
-Education: ${userProfile.education?.degree || ""} at ${userProfile.education?.institution || ""}
-Return only JSON with:
-{ summary, skills, experience_bullets, education }
-`;
+  Job Description: ${jobDescription}
+  Job Responsibilities: ${jobResponsibilities}
+  User Profile Summary:
+  Name: ${userProfile.personal?.name || "N/A"}
+  Skills: ${userProfile.skills?.join(", ") || "None"}
+  Work Experience: ${userProfile.work?.map(w => w.position || "").join(", ")}
+  Education: ${userProfile.education?.degree || ""} at ${userProfile.education?.institution || ""}
+  Return only JSON with: { summary, skills, experience_bullets, education }`;
+  
   const out = await chatOnce([
     { role: 'system', content: GENERATE_SYS },
     { role: 'user', content: prompt }
@@ -179,7 +185,13 @@ function resumeHTML(profile, resumeData) {
   </body></html>`;
 }
 
-async function renderPDF(profile, resumeData) {
+async function renderPDF(userId, resumeData) {
+  // Get user profile
+  const userRef = db.collection('users').doc(userId);
+  const snap = await userRef.get();
+  if (!snap.exists) return res.status(404).json({ error: 'User not found' });
+  const profile = snap.data().profile;
+
   const html = resumeHTML(profile, resumeData);
   const filename = `resume-${Date.now()}.pdf`;
   const outPath = path.join(FILES_DIR, filename);
@@ -208,17 +220,11 @@ app.post('/api/generate', async (req, res) => {
   try {
     const { userId, jobDescription, jobResponsibilities } = GenerateSchema.parse(req.body);
 
-    // 1. Get user profile
-    const userRef = db.collection('users').doc(userId);
-    const snap = await userRef.get();
-    if (!snap.exists) return res.status(404).json({ error: 'User not found' });
-    const profile = snap.data().profile;
-
     // 2. Generate resume
-    const genResume = await resumeGeneration(jobDescription, jobResponsibilities, profile);
+    const genResume = await resumeGeneration(jobDescription, jobResponsibilities, userId);
 
     // 3. Render PDF
-    const filename = await renderPDF(profile, genResume);
+    const filename = await renderPDF(userId, genResume);
 
     // 4. Return result
     res.json({
