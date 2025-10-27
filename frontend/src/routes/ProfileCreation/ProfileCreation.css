@@ -33,7 +33,7 @@
 
 /* --- Collapsible Section --- */
 .collapsible-section {
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgb(54, 53, 53);
   border-radius: 0.75rem;
   background-color: #f9fafb;
   overflow: hidden;
@@ -74,7 +74,7 @@
 .input {
   background-color: #f9fafb;
   color: #111827;
-  border: 1px solid #d1d5db;
+  border: 1px solid rgb(54, 53, 53);
   border-radius: 0.5rem;
   padding: 0.75rem 1rem;
   width: 100%;
@@ -87,7 +87,7 @@
 .textarea {
   background-color: #f9fafb;
   color: #111827;
-  border: 1px solid #d1d5db;
+  border: 1px solid rgb(54, 53, 53);
   border-radius: 0.5rem;
   padding: 0.75rem 1rem;
   width: 100%;
@@ -101,7 +101,7 @@
 
 .input:focus,
 .textarea:focus {
-  border-color: #F7EBDF;
+  border-color: rgb(54, 53, 53);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
@@ -126,7 +126,7 @@
 }
 
 .work-experience-item {
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgb(54, 53, 53);
   background-color: #F7EBDF;
   border-radius: 0.75rem;
   margin-bottom: 1rem;
@@ -158,7 +158,7 @@
   color: black;
   padding: 0.6rem 1.25rem;
   border-radius: 0.5rem;
-  border: none;
+  border: rgb(54, 53, 53);
   cursor: pointer;
   font-weight: 600;
   margin-top: 0.75rem;
