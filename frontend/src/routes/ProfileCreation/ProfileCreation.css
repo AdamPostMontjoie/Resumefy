@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #F7EBDF 0%, #EEEEF0 100%);
   color: #111827;
   padding: 2rem;
 }
@@ -42,11 +42,11 @@
 
 .collapsible-button {
   width: 100%;
-  background-color: #667eea;
+  background-color: #F7EBDF;
   border: none;
   padding: 1rem;
   font-weight: 600;
-  color: #ffffff;
+  color: #111827;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -56,12 +56,12 @@
 }
 
 .collapsible-button:hover {
-  background-color: #5a6dda;
+  background-color: #F7EBDF;
 }
 
 .collapsible-content {
   padding: 1.25rem;
-  background-color: #ffffff;
+  background-color: #F7EBDF;
 }
 
 /* --- Input Fields & Layout --- */
@@ -101,7 +101,7 @@
 
 .input:focus,
 .textarea:focus {
-  border-color: #667eea;
+  border-color: #F7EBDF;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
@@ -127,7 +127,7 @@
 
 .work-experience-item {
   border: 1px solid #e5e7eb;
-  background-color: #f9fafb;
+  background-color: #F7EBDF;
   border-radius: 0.75rem;
   margin-bottom: 1rem;
   padding: 1.25rem;
@@ -154,8 +154,8 @@
 }
 
 .add-button {
-  background-color: #667eea;
-  color: white;
+  background-color: #F7EBDF;
+  color: black;
   padding: 0.6rem 1.25rem;
   border-radius: 0.5rem;
   border: none;
@@ -167,7 +167,7 @@
 }
 
 .add-button:hover {
-  background-color: #5a6dda;
+  background-color: #ecddce;
 }
 
 .submit-button {
