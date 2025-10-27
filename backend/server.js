@@ -220,13 +220,13 @@ app.post('/api/generate', async (req, res) => {
   try {
     const { userId, jobDescription, jobResponsibilities } = GenerateSchema.parse(req.body);
 
-    // 2. Generate resume
+    // 1. Generate resume
     const genResume = await resumeGeneration(jobDescription, jobResponsibilities, userId);
 
-    // 3. Render PDF
+    // 2. Render PDF
     const filename = await renderPDF(userId, genResume);
 
-    // 4. Return result
+    // 3. Return result
     res.json({
       pdfUrl: `/files/${filename}`,
       rawResume: genResume
