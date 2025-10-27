@@ -26,10 +26,6 @@ function ResumeGenerationPage(){
     navigate("/profile");
   };
 
-  const resumeGenerate = () => {
-    navigate("/api/generate");
-  };
-
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
       <div style={{ backgroundColor: 'white', borderBottom: '1px solid #e5e7eb', padding: '20px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -57,7 +53,7 @@ function ResumeGenerationPage(){
             <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '24px', border: '1px solid #e5e7eb' }}>
               <h3 style={{ margin: '0 0 15px 0', fontSize: '1.1rem', fontWeight: '600' }}>Quick Actions</h3>
               <button onClick={editProfile} style={{ width: '100%', padding: '12px', border: '2px solid #e5e7eb', borderRadius: '10px', background: 'white', marginBottom: '12px', cursor: 'pointer' }}>📝 Edit Profile</button>
-              <button onClick={resumeGenerate} style={{ ...buttonStyle, padding: '16px' }}>✨ Generate Resume</button>
+              <button style={{ ...buttonStyle, padding: '16px' }}>✨ Generate Resume</button>
             </div>
             <div style={{ backgroundColor: '#eff6ff', borderRadius: '16px', padding: '20px', border: '1px solid #dbeafe' }}>
               <div style={{ fontSize: '2rem', marginBottom: '10px' }}>💡</div>
