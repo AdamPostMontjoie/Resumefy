@@ -112,7 +112,17 @@ Preserve truth; active voice; no first-person. Return a JSON object containing k
 Do NOT include markdown or extra text.`;
 
 async function resumeGeneration(jobDescription, jobResponsibilities, userProfile) {
-  const prompt = `Job description:\n${jobDescription}\n\nJob Responsibilities:\n${jobResponsibilities}\n\nUser Profile:\n${JSON.stringify(userProfile, null, 2)}\n\nReturn a valid JSON resume.`;
+  const prompt = `You are creating a tailored resume.
+Job Description: ${jobDescription}
+Job Responsibilities: ${jobResponsibilities}
+User Profile Summary:
+Name: ${userProfile.personal?.name || "N/A"}
+Skills: ${userProfile.skills?.join(", ") || "None"}
+Work Experience: ${userProfile.work?.map(w => w.position || "").join(", ")}
+Education: ${userProfile.education?.degree || ""} at ${userProfile.education?.institution || ""}
+Return only JSON with:
+{ summary, skills, experience_bullets, education }
+`;
   const out = await chatOnce([
     { role: 'system', content: GENERATE_SYS },
     { role: 'user', content: prompt }
