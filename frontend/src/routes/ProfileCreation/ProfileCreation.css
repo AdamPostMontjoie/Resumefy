@@ -154,7 +154,7 @@
 }
 
 .add-button {
-  color: black;
+  color: rgb(51, 143, 9);
   font-weight: 600;
   text-decoration: underline;
   font-size: 0.9rem;
@@ -165,7 +165,7 @@
 }
 
 .add-button:hover {
-  background-color: #414141;
+  color: rgb(83, 196, 31);
 }
 
 .submit-button {
