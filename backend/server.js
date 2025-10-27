@@ -49,7 +49,7 @@ app.post('/register', async (req, res) => {
       profile: {
         Summary: "",
         certifications: [],
-        education: {},
+        education: [],
         personal: {},
         skills: [],
         websites: [],
@@ -69,7 +69,8 @@ app.put('/profile/:id', async (req, res) => {
   try {
     const uid = req.params.id;
     const newProfile = req.body;
-    const userRef = db.collection('users').doc(uid);
+    const uid = req.params.id;
+    const userRef = db.collection("users").doc(uid);
     await userRef.update({ profile: newProfile });
     res.status(200).send({ message: "Updated profile" });
   } catch (error) {
@@ -78,7 +79,20 @@ app.put('/profile/:id', async (req, res) => {
   }
 });
 
-// === OPENROUTER + MISTRAL ===
+// Start server
+const PORT = 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); */
+
+// backend/server.js
+// === RESUME GENERATION PIPELINE ===
+
+const { z } = require('zod');
+const puppeteer = require('puppeteer');
+const cosine = require('cosine-similarity');
+const fetch = require('node-fetch');
+const { pipeline } = await import('@xenova/transformers');
+
+// ---- 1️⃣ OpenRouter helper ----
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 async function chatOnce(messages) {
@@ -94,87 +108,82 @@ async function chatOnce(messages) {
       model: 'mistralai/mistral-7b-instruct:free',
       messages,
       temperature: 0.2,
-      max_tokens: 16000
+      max_tokens: 800
     })
   });
   const json = await res.json();
   return json?.choices?.[0]?.message?.content ?? '';
 }
 
-const GENERATE_SYS = `You generate a resume using the entries from a user profile most relevant to the job description and responsibilities.
-Preserve truth; active voice; no first-person. Return a JSON object containing keys like:
-{
-  "summary": string,
-  "skills": [string],
-  "experience_bullets": [string],
-  "education": [ { "degree": string, "institution": string, "year": string } ]
+// ---- 2️⃣ Embeddings ----
+let embedder = null;
+async function getEmbedder() {
+  if (!embedder)
+    embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+  return embedder;
 }
-Do NOT include markdown or extra text.`;
 
-async function resumeGeneration(jobDescription, jobResponsibilities, userProfile) {
-  const prompt = `Job description:\n${jobDescription}\n\nJob Responsibilities:\n${jobResponsibilities}\n\nUser Profile:\n${JSON.stringify(userProfile, null, 2)}\n\nReturn a valid JSON resume.`;
+async function embed(text) {
+  const e = await getEmbedder();
+  const output = await e(text, { pooling: 'mean', normalize: true });
+  return Array.from(output.data);
+}
+
+// ---- 3️⃣ Ranking ----
+function rankBullets(jdVec, bullets, bulletVecs) {
+  const rows = bullets.map((b, i) => ({
+    bullet: b,
+    score: cosine(jdVec, bulletVecs[i] || jdVec)
+  }));
+  rows.sort((a, b) => b.score - a.score);
+  return rows;
+}
+
+// ---- 4️⃣ Rewriting ----
+const REWRITE_SYS = `You improve resume bullets to match a job description.
+Preserve truth; ≤18 words; active voice; no first-person. 
+Return a JSON array of rewritten bullets only.`;
+
+async function rewriteBullets(jobDescription, bulletsRanked) {
+  const list = bulletsRanked.map(x => `• ${x.bullet}`).join('\n');
+  const prompt = `Job description:\n${jobDescription}\n\nBullets to improve:\n${list}\n\nReturn JSON array of strings.`;
   const out = await chatOnce([
-    { role: 'system', content: GENERATE_SYS },
+    { role: 'system', content: REWRITE_SYS },
     { role: 'user', content: prompt }
   ]);
-
-  try {
-    return JSON.parse(out);
-  } catch {
-    console.warn('⚠️ Model returned invalid JSON. Attempting to fix.');
-    const fixed = out.match(/\{[\s\S]*\}/);
-    return fixed ? JSON.parse(fixed[0]) : { summary: "", skills: [], experience_bullets: [] };
-  }
+  return JSON.parse(out);
 }
 
-// === PDF GENERATION ===
+// ---- 5️⃣ PDF rendering ----
 function escapeHTML(s) {
   return String(s || '').replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-function resumeHTML(profile, resumeData) {
-  const bulletsHTML = (resumeData.experience_bullets || [])
-    .map(b => `<li>${escapeHTML(b)}</li>`)
-    .join('');
-
-  const skillsHTML = (resumeData.skills || [])
-    .map(s => `<span style="margin-right:8px;">• ${escapeHTML(s)}</span>`)
-    .join('');
-
-  const eduHTML = (resumeData.education || [])
-    .map(e => `<div>${escapeHTML(e.degree)} – ${escapeHTML(e.institution)} (${escapeHTML(e.year)})</div>`)
-    .join('');
-
+function resumeHTML(profile, bullets) {
+  const expHTML = bullets.map(b => `<li>${escapeHTML(b)}</li>`).join('');
   return `<!doctype html>
   <html><head><meta charset="utf-8"><style>
-    body { font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color: #222; padding: 40px; }
-    h1 { font-size: 22px; margin-bottom: 4px; }
-    h2 { font-size: 16px; margin-top: 24px; margin-bottom: 8px; }
-    ul { margin-top: 0; padding-left: 20px; }
+    body { font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+    h1 { font-size: 22px; margin: 0 0 6px; }
+    h2 { font-size: 14px; margin: 16px 0 6px; }
+    ul { margin: 6px 0; padding-left: 18px; }
     li { margin-bottom: 4px; }
-    .skills span { display: inline-block; }
   </style></head>
   <body>
     <h1>${escapeHTML(profile.personal?.name || 'Name')}</h1>
     <div>${escapeHTML(profile.personal?.email || '')}</div>
-    <h2>Summary</h2>
-    <p>${escapeHTML(resumeData.summary || '')}</p>
-    <h2>Skills</h2>
-    <div class="skills">${skillsHTML}</div>
     <h2>Experience Highlights</h2>
-    <ul>${bulletsHTML}</ul>
-    <h2>Education</h2>
-    ${eduHTML}
+    <ul>${expHTML}</ul>
   </body></html>`;
 }
 
-async function renderPDF(profile, resumeData) {
-  const html = resumeHTML(profile, resumeData);
+async function renderPDF(profile, bullets) {
+  const html = resumeHTML(profile, bullets);
   const filename = `resume-${Date.now()}.pdf`;
   const outPath = path.join(FILES_DIR, filename);
 
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
   await page.setContent(html, { waitUntil: 'networkidle0' });
   await page.pdf({
@@ -187,39 +196,50 @@ async function renderPDF(profile, resumeData) {
   return filename;
 }
 
-// === /api/generate ENDPOINT ===
+// ---- 6️⃣ Main route ----
 const GenerateSchema = z.object({
   userId: z.string(),
-  jobDescription: z.string().min(40),
-  jobResponsibilities: z.string().min(40)
+  jobDescription: z.string().min(40)
 });
 
 app.post('/api/generate', async (req, res) => {
   try {
-    const { userId, jobDescription, jobResponsibilities } = GenerateSchema.parse(req.body);
+    const { userId, jobDescription } = GenerateSchema.parse(req.body);
 
-    // 1. Get user profile
+    // 1. Get user profile from Firestore
     const userRef = db.collection('users').doc(userId);
     const snap = await userRef.get();
     if (!snap.exists) return res.status(404).json({ error: 'User not found' });
     const profile = snap.data().profile;
 
-    // 2. Generate resume
-    const genResume = await resumeGeneration(jobDescription, jobResponsibilities, profile);
+    // 2. Collect all bullets from user profile (skills, work, etc.)
+    const bullets = [];
+    if (Array.isArray(profile.skills)) bullets.push(...profile.skills);
+    if (Array.isArray(profile.work))
+      profile.work.forEach(w =>
+        bullets.push(...(w.bullets || []))
+      );
+    if (Array.isArray(profile.certifications))
+      bullets.push(...profile.certifications);
 
-    // 3. Render PDF
-    const filename = await renderPDF(profile, genResume);
+    if (bullets.length === 0)
+      return res.status(400).json({ error: 'No content in user profile to generate resume.' });
 
-    // 4. Return result
-    res.json({
-      pdfUrl: `/files/${filename}`,
-      rawResume: genResume
-    });
+    // 3. Compute embeddings and rank
+    const jdVec = await embed(jobDescription);
+    const bulletVecs = await Promise.all(bullets.map(b => embed(b)));
+    const ranked = rankBullets(jdVec, bullets, bulletVecs);
+
+    // 4. Rewrite top bullets with Mistral
+    const top = ranked.slice(0, 8);
+    const rewritten = await rewriteBullets(jobDescription, top);
+
+    // 5. Render PDF
+    const filename = await renderPDF(profile, rewritten);
+
+    res.json({ pdfUrl: `/files/${filename}`, usedBullets: rewritten });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: e.message || 'Resume generation failed' });
+    res.status(500).json({ error: e.message });
   }
 });
-
-// === START SERVER ===
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));

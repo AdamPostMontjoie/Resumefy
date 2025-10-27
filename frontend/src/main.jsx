@@ -7,6 +7,7 @@ import ResumeGenerationPage from './routes/ResumeGeneration/ResumeGenerationPage
 import ProfileCreationPage from './routes/ProfileCreation/ProfileCreationPage.jsx'
 import RegisterPage from './routes/Register/RegisterPage.jsx'
 import LoginPage from './routes/Login/LoginPage.jsx';
+import { AuthProvider } from './auth/authContext.jsx';
 
 const router = createBrowserRouter([
   {
@@ -36,6 +37,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </StrictMode>,
 )
