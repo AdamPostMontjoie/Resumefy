@@ -154,20 +154,18 @@
 }
 
 .add-button {
-  background-color: #F7EBDF;
   color: black;
-  padding: 0.6rem 1.25rem;
-  border-radius: 0.5rem;
-  border: rgb(54, 53, 53);
-  cursor: pointer;
   font-weight: 600;
-  margin-top: 0.75rem;
+  text-decoration: underline;
+  font-size: 0.9rem;
+  background: none;
+  border: none;
+  cursor: pointer;
   align-self: flex-start;
-  transition: background-color 0.2s ease;
 }
 
 .add-button:hover {
-  background-color: #ecddce;
+  background-color: #414141;
 }
 
 .submit-button {
