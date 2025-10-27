@@ -123,10 +123,10 @@ async function resumeGeneration(jobDescription, jobResponsibilities, userId) {
   Job Description: ${jobDescription}
   Job Responsibilities: ${jobResponsibilities}
   User Profile Summary:
-  Name: ${userProfile.personal?.name || "N/A"}
-  Skills: ${userProfile.skills?.join(", ") || "None"}
-  Work Experience: ${userProfile.work?.map(w => w.position || "").join(", ")}
-  Education: ${userProfile.education?.degree || ""} at ${userProfile.education?.institution || ""}
+  Name: ${profile.personal?.name || "N/A"}
+  Skills: ${profile.skills?.join(", ") || "None"}
+  Work Experience: ${profile.work?.map(w => w.position || "").join(", ")}
+  Education: ${profile.education?.degree || ""} at ${profile.education?.institution || ""}
   Return only JSON with: { summary, skills, experience_bullets, education }`;
   
   const out = await chatOnce([
