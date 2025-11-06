@@ -211,7 +211,6 @@ const ProfileCreationPage = () => {
             <input  name="lastname" placeholder="Last Name" value={personalInfo.lastname} onChange={handlePersonalChange} className="input input-half" required />
             <input disabled name="email" type="email" placeholder="Email" value={personalInfo.email} onChange={handlePersonalChange} className="input input-half" required />
             <input name="phone" placeholder="Phone" value={personalInfo.phone} onChange={handlePersonalChange} className="input input-half" />
-            <input name="pronoun" placeholder="Pronoun" value={personalInfo.pronoun} onChange={handlePersonalChange} className="input input-half" />
           </div>
         </CollapsibleSection>
         {/* Education */}

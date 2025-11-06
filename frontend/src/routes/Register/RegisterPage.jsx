@@ -67,13 +67,7 @@ function RegisterPage() {
       <div className="background-shape" />
       
       <div className="content-wrapper">
-        <div className="branding-section">
-          <h1 className="branding-title">RESUMEFY</h1>
-          <p className="branding-subtitle">BY TEAM 4 INC.</p>
-          <p className="branding-description">Create professional resumes tailored to any job description.</p>
-          <div className="empty-flex-div">
-          </div>
-        </div>
+    
 
         <div className="form-card">
 
