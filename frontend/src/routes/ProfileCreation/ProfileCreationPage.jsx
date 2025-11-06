@@ -199,6 +199,8 @@ const ProfileCreationPage = () => {
   };
 
   return (
+    <div>
+    <button onClick={() => { navigate('/')}} className="back-to-main">Ex</button>
     <div className="page-container">
       <form onSubmit={handleSubmit} className="form">
         <h1 className="title">Profile</h1>
@@ -285,6 +287,7 @@ const ProfileCreationPage = () => {
 
         <button type="submit" className="submit-button">Submit Profile</button>
       </form>
+    </div>
     </div>
   );
 };

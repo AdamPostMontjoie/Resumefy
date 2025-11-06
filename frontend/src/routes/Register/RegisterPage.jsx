@@ -61,6 +61,8 @@ function RegisterPage() {
   }
 
   return (
+   <div>
+   <button onClick={() => { navigate('/')}} className="back-to-main">Ex</button>
    <div className="login-page-container">
       <div className="background-shape" />
       
@@ -95,6 +97,7 @@ function RegisterPage() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }
