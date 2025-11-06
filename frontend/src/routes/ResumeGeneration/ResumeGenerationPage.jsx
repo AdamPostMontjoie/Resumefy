@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
 import { useEffect } from "react";
 import { doSignOut } from "../../auth/auth";
+import "./ResumeGeneration.css"
 
 const buttonStyle = {
   width: '100%',

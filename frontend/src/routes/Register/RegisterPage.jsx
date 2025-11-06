@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { doCreateUserWithEmailAndPassword } from "../../auth/auth";
 import axios from "axios";
 import { useAuth } from "../../auth/useAuth";
+import "./Register.css"
 
 function RegisterPage() {
   const [email, setEmail] = useState("");

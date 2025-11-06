@@ -1,0 +1,29 @@
+.loginButton {
+  background: #372414;
+  color: white;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.loginButton:hover {
+  border-color: #5a5e5e;
+  background: #353838;
+}
+
+.navLink {
+  text-decoration: none;
+  border-radius: 10px;
+  border-color: #3f4141;
+  border: 2px solid;
+  color: #372414;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: color 0.2s
+}
+
+.navLink:hover {
+  background-color: #cecac8;
+}
