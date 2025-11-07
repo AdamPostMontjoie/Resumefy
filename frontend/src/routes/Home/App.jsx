@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import "./App.css"
 
 function App() {
   const navigate = useNavigate();
@@ -45,19 +46,19 @@ function App() {
           RESUMEFY
         </h1>
         <nav style={{ display: "flex", gap: "25px" }}>
-          <a href="#" style={navLink}>
+          <button onCLick="#" className="navLink">
             Home
-          </a>
-          <a href="#" style={navLink}>
+          </button>
+          <button onClick="#" className="navLink">
             About
-          </a>
-          <a href="#" style={navLink}>
+          </button>
+          <button onClick="#" className="navLink">
             Features
-          </a>
-          <a href="#" style={navLink}>
+          </button>
+          <button onClick="#" className="navLink">
             Contact
-          </a>
-          <button onClick={goToLogin} style={loginButton}>
+          </button>
+          <button onClick={goToLogin} className="loginButton">
             Sign In
           </button>
         </nav>
@@ -240,23 +241,6 @@ function App() {
     </div>
   );
 }
-const navLink = {
-  textDecoration: "none",
-  color: "#372414",
-  fontWeight: "500",
-  fontSize: "1rem",
-  transition: "color 0.2s",
-};
-
-const loginButton = {
-  backgroundColor: "#372414",
-  color: "white",
-  border: "none",
-  borderRadius: "10px",
-  padding: "10px 18px",
-  fontWeight: "600",
-  cursor: "pointer",
-};
 
 const ctaButton = {
   background: "linear-gradient(135deg, #372414 0%, #372414 100%)",

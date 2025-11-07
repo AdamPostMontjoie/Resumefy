@@ -199,6 +199,8 @@ const ProfileCreationPage = () => {
   };
 
   return (
+    <div>
+    <button onClick={() => { navigate('/')}} className="back-to-main">Ex</button>
     <div className="page-container">
       <form onSubmit={handleSubmit} className="form">
         <h1 className="title">Profile</h1>
@@ -209,7 +211,6 @@ const ProfileCreationPage = () => {
             <input  name="lastname" placeholder="Last Name" value={personalInfo.lastname} onChange={handlePersonalChange} className="input input-half" required />
             <input disabled name="email" type="email" placeholder="Email" value={personalInfo.email} onChange={handlePersonalChange} className="input input-half" required />
             <input name="phone" placeholder="Phone" value={personalInfo.phone} onChange={handlePersonalChange} className="input input-half" />
-            <input name="pronoun" placeholder="Pronoun" value={personalInfo.pronoun} onChange={handlePersonalChange} className="input input-half" />
           </div>
         </CollapsibleSection>
         {/* Education */}
@@ -236,7 +237,7 @@ const ProfileCreationPage = () => {
               <input name="title" placeholder="Job Title" value={exp.title} onChange={(e) => handleWorkChange(index, e)} className="input" required />
               <input name="company" placeholder="Company" value={exp.company} onChange={(e) => handleWorkChange(index, e)} className="input" required />
               <input name="dates" placeholder="Dates" value={exp.dates} onChange={(e) => handleWorkChange(index, e)} className="input" />
-              <textarea name="description" placeholder="Description" value={exp.description} onChange={(e) => handleWorkChange(index, e)} className="textarea" required/>
+              <textarea name="description" placeholder="Write a short description of the work experience..." value={exp.description} onChange={(e) => handleWorkChange(index, e)} className="textarea" required/>
               <input name="location" placeholder="Location" value={exp.location} onChange={(e) => handleWorkChange(index, e)} className="input" />
               <button type="button" onClick={() => removeWork(index)} className="remove-button">Remove</button>
             </div>
@@ -285,6 +286,7 @@ const ProfileCreationPage = () => {
 
         <button type="submit" className="submit-button">Submit Profile</button>
       </form>
+    </div>
     </div>
   );
 };

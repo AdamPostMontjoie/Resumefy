@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
 import { useEffect } from "react";
 import { doSignOut } from "../../auth/auth";
+import "./ResumeGeneration.css"
 
 const buttonStyle = {
   width: '100%',
@@ -47,13 +48,11 @@ function ResumeGenerationPage(){
   }
 
   return (
+    <div>
+    <button onClick={() => { navigate('/')}} className="back-to-main">Ex</button>
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
       <div style={{ backgroundColor: 'white', borderBottom: '1px solid #e5e7eb', padding: '20px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-          <div style={{ width: '45px', height: '45px', borderRadius: '12px', background: 'linear-gradient(135deg, #667eea, #764ba2)' }} />
-          <div><h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700' }}>Resumefy</h1></div>
-        </div>
-        <div style={{ display: 'flex', gap: '15px' }}>
+        <div className="top-right" style={{ display: 'flex', gap: '15px' }}>
           <button onClick={handleLogout} style={{ padding: '10px 24px', border: '2px solid #e5e7eb', borderRadius: '10px', background: 'white', cursor: 'pointer', fontSize: '1rem' }}>Logout</button>
           <div onClick={editProfile} style={{ width: '45px', height: '45px', borderRadius: '12px', background: 'linear-gradient(135deg, #372414, #372414)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', fontSize: '2.1rem' }}>🧛🏻‍♂️</div>
         </div>
@@ -83,6 +82,7 @@ function ResumeGenerationPage(){
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

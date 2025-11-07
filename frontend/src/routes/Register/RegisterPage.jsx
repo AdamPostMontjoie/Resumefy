@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { doCreateUserWithEmailAndPassword } from "../../auth/auth";
 import axios from "axios";
 import { useAuth } from "../../auth/useAuth";
+import "./Register.css"
 
 function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -60,17 +61,13 @@ function RegisterPage() {
   }
 
   return (
+   <div>
+   <button onClick={() => { navigate('/')}} className="back-to-main">Ex</button>
    <div className="login-page-container">
       <div className="background-shape" />
       
       <div className="content-wrapper">
-        <div className="branding-section">
-          <h1 className="branding-title">RESUMEFY</h1>
-          <p className="branding-subtitle">BY TEAM 4 INC.</p>
-          <p className="branding-description">Create professional resumes tailored to any job description.</p>
-          <div className="empty-flex-div">
-          </div>
-        </div>
+    
 
         <div className="form-card">
 
@@ -94,6 +91,7 @@ function RegisterPage() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

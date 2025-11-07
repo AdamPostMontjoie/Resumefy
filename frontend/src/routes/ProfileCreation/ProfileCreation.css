@@ -139,12 +139,13 @@
 
 /* --- Buttons --- */
 .remove-button {
-  color: #dc2626;
+  color: #000000;
   font-weight: 500;
-  text-decoration: underline;
   font-size: 0.9rem;
-  background: none;
-  border: none;
+  background: #ffffff;
+  border: 2px solid;
+  border-color: #3f4141;
+  border-radius: 10px;
   cursor: pointer;
   align-self: flex-end;
 }
@@ -154,12 +155,13 @@
 }
 
 .add-button {
-  color: rgb(83, 196, 31);
+  color: rgb(0, 0, 0);
   font-weight: 600;
-  text-decoration: underline;
   font-size: 0.9rem;
-  background: none;
-  border: none;
+  background: #ffffff;
+  border: 2px solid;
+  border-color: #3f4141;
+  border-radius: 10px;
   cursor: pointer;
   align-self: flex-start;
 }
@@ -210,4 +212,15 @@
 
 .clear-button:active {
   transform: scale(0.98);
+}
+
+.textarea::placeholder {
+  font-family: 'Arial', Helvetica, sans-serif;
+  font-size: 1rem;
+  color: #999;
+}
+
+.textarea {
+  font-family: 'Arial', Helvetica, sans-serif;
+  font-size: 1rem;
 }
