@@ -1,54 +1,92 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
-import { useEffect } from "react";
 import { doSignOut } from "../../auth/auth";
-import "./ResumeGeneration.css"
+import "./ResumeGeneration.css";
 
 const buttonStyle = {
-  width: '100%',
-  padding: '16px',
-  border: 'none',
-  borderRadius: '12px',
-  background: 'linear-gradient(135deg, #372414 0%, #372414 100%)',
-  color: 'white',
-  fontSize: '1rem',
-  fontWeight: '600',
-  cursor: 'pointer',
-  boxShadow: '0 10px 25px rgba(102, 126, 234, 0.4)',
-  transition: 'all 0.3s'
+  width: "100%",
+  padding: "16px",
+  border: "none",
+  borderRadius: "12px",
+  background: "linear-gradient(135deg, #372414 0%, #372414 100%)",
+  color: "white",
+  fontSize: "1rem",
+  fontWeight: "600",
+  cursor: "pointer",
+  boxShadow: "0 10px 25px rgba(102, 126, 234, 0.4)",
+  transition: "all 0.3s",
 };
 
-function ResumeGenerationPage(){
-  const {userLoggedIn,loading} = useAuth()
-  const [jobDesc, setJobDesc] = useState('');
+function ResumeGenerationPage() {
+  const { userLoggedIn, loading, currentUser } = useAuth();
   const navigate = useNavigate();
 
-  //if not logged in, redirect to login page
-  useEffect(()=>{
-    function loginCheck(){
-      if(!userLoggedIn && !loading){
-        navigate('/login')
-      }
-    }
-    loginCheck()
-  },[userLoggedIn, loading,navigate])
+  const [jobDesc, setJobDesc] = useState("");
+  const [pdfUrl, setPdfUrl] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    if (!loading && !userLoggedIn) navigate("/login");
+  }, [userLoggedIn, loading, navigate]);
 
   const handleLogout = () => {
-    doSignOut()
+    doSignOut();
     navigate("/login");
   };
-  //goes to profile page
+
   const editProfile = () => {
     navigate("/profile");
   };
-  //this handles the resume generation
-  const handleGenerate = ()=>{
-    console.log("do the logic here")
-  }
 
-  return (
-    <div>
+  const handleGenerate = async () => {
+    if (!jobDesc.trim()) {
+      alert("Please paste a job description before generating.");
+      return;
+    }
+
+    try {
+      setIsGenerating(true);
+      setPdfUrl("");
+
+      const userId = currentUser?.uid;
+
+      const response = await fetch("http://localhost:5005/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          jobDescription: jobDesc,
+          jobResponsibilities: jobDesc,
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        console.error("Error from backend:", err);
+        alert("Resume generation failed: " + (err.error || response.statusText));
+        setIsGenerating(false);
+        return;
+      }
+
+      const data = await response.json();
+      console.log("Generated resume data:", data);
+
+      if (data.pdfUrl) {
+        setPdfUrl(data.pdfUrl);
+      } else {
+        alert("No PDF returned from the server.");
+      }
+    } catch (error) {
+      console.error("Error generating resume:", error);
+      alert("Error generating resume. Check console for details.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+return (
+  <div>
     <button onClick={() => { navigate('/')}} className="back-to-main">Ex</button>
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
       <div style={{ backgroundColor: 'white', borderBottom: '1px solid #e5e7eb', padding: '20px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -57,7 +95,7 @@ function ResumeGenerationPage(){
           <div onClick={editProfile} style={{ width: '45px', height: '45px', borderRadius: '12px', background: 'linear-gradient(135deg, #372414, #372414)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', fontSize: '2.1rem' }}>🧛🏻‍♂️</div>
         </div>
       </div>
-
+      
       <div style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
         <h2 style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '8px' }}>Create Your Resume</h2>
         <p style={{ color: '#6b7280', marginBottom: '30px' }}>Paste the job description below</p>
@@ -72,7 +110,14 @@ function ResumeGenerationPage(){
             <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '24px', border: '1px solid #e5e7eb' }}>
               <h3 style={{ margin: '0 0 15px 0', fontSize: '1.1rem', fontWeight: '600' }}>Quick Actions</h3>
               <button onClick={editProfile} style={{ width: '100%', padding: '12px', border: '2px solid #e5e7eb', borderRadius: '10px', background: 'white', marginBottom: '12px', cursor: 'pointer' }}>📝 Edit Profile</button>
-              <button onClick={handleGenerate} style={{ ...buttonStyle, padding: '16px' }}>Generate Resume</button>
+              <button onClick={handleGenerate} style={{ ...buttonStyle, padding: '16px' }} disabled={isGenerating}>{isGenerating ? 'Generating...' : 'Generate Resume'}</button>
+
+              {pdfUrl && (
+                <div style={{ marginTop: '20px' }}>
+                  <p style={{ color: '#2563eb', fontWeight: '600', marginBottom: '8px' }}>✅ Resume Generated!</p>
+                  <a href={pdfUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#1d4ed8', textDecoration: 'underline', wordBreak: 'break-all' }}>{pdfUrl}</a>
+                </div>
+              )}
             </div>
             <div style={{ backgroundColor: '#eff6ff', borderRadius: '16px', padding: '20px', border: '1px solid #dbeafe' }}>
               <div style={{ fontSize: '2rem', marginBottom: '10px' }}>💡</div>
@@ -83,8 +128,8 @@ function ResumeGenerationPage(){
         </div>
       </div>
     </div>
-    </div>
-  );
+  </div>
+);
 }
 
 export default ResumeGenerationPage
