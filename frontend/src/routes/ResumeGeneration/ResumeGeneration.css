@@ -1,10 +1,30 @@
-.top-right{
+div {
+  background-color: #F7EBDF;
+}
+
+body {
+  background-color: #F7EBDF;
+  overflow-x: hidden;
+}
+
+.top-right {
   position: absolute;
   top: 0;
   right: 0;
-  margin-top: 20;
 }
 
-textarea {
-  resize: none;
+.quickOptions {
+  text-decoration: none;
+  border-radius: 10px;
+  border-color: #3f4141;
+  border: 2px solid;
+  color: #372414;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+
+.quickOptions:hover {
+  background-color: #cecac8;
 }
