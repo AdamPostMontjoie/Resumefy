@@ -80,7 +80,7 @@ const ProfileCreationPage = () => {
     { institution: "", dates: "", major: "", minor: "", degree: "", gpa: "" },
   ]);
   const [workExperience, setWorkExperience] = useState([
-    { title: "", company: "", dates: "", description: "", location: "" },
+    { title: "", company: "", startDate: "", endDate:"", description: "", location: "" },
   ]);
   const [skills, setSkills] = useState([""]);
 
@@ -127,7 +127,7 @@ const ProfileCreationPage = () => {
           setWorkExperience(
             profile.work && profile.work.length > 0 
               ? profile.work 
-              : [{ title: "", company: "", dates: "", description: "", location: "" }]
+              : [{ title: "", company: "", startDate:"", endDate:"",  description: "", location: "" }]
           );   
           setSkills(
             profile.skills && profile.skills.length > 0 
@@ -200,7 +200,7 @@ const addEducation = () => {
   const removeEducation = (i) => setEducation(education.filter((_, x) => x !== i));
  const addWork = () => {
     const today = new Date().toISOString().split('T')[0];
-    setWorkExperience([...workExperience, { title: "", company: "", dates: today, description: "", location: "" }]);
+    setWorkExperience([...workExperience, { title: "", company: "", startDate:"", endDate: today, description: "", location: "" }]);
   };
   const removeWork = (i) => setWorkExperience(workExperience.filter((_, x) => x !== i));
   const addSkill = () => setSkills([...skills, ""]);
@@ -362,16 +362,16 @@ const addEducation = () => {
               <input name="title" placeholder="Job Title" value={exp.title} onChange={(e) => handleWorkChange(index, e)} className="input" required />
               <input name="company" placeholder="Company" value={exp.company} onChange={(e) => handleWorkChange(index, e)} className="input" required />
                <DatePicker
-                  name="dates"
-                  placeholderText="Dates (MM/YYYY)"
+                  name="startDate"
+                  placeholderText="Start Date(MM/YYYY)"
                   
-                  selected={exp.dates ? new Date(exp.dates.replace(/-/g, '/')) : null}
+                  selected={exp.startDate ? new Date(exp.startDate.replace(/-/g, '/')) : null}
                   
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
                     const mockEvent = {
                       target: {
-                        name: "dates",
+                        name: "startDate",
                         value: value
                       }
                     };
@@ -382,6 +382,28 @@ const addEducation = () => {
                   dateFormat="MM/yyyy"
                   
                   className="input input-half"
+                />
+                <DatePicker
+                  name="endDate"
+                  placeholderText="End Date(MM/YYYY)"
+                  
+                  selected={exp.endtDate ? new Date(exp.endDate.replace(/-/g, '/')) : null}
+                  
+                  onChange={(date) => {
+                    const value = date ? date.toISOString().split('T')[0] : "";
+                    const mockEvent = {
+                      target: {
+                        name: "endDate",
+                        value: value
+                      }
+                    };
+                    handleWorkChange(index, mockEvent);
+                  }}
+                  
+                  showMonthYearPicker
+                  dateFormat="MM/yyyy"
+                  
+                  className="input  input-half"
                 />
               <textarea name="description" placeholder="Write a short description of the work experience..." value={exp.description} onChange={(e) => handleWorkChange(index, e)} className="textarea" required/>
               <input name="location" placeholder="Location" value={exp.location} onChange={(e) => handleWorkChange(index, e)} className="input" />
