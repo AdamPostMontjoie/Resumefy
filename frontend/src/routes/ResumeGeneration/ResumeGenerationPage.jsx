@@ -4,7 +4,7 @@ import { useAuth } from "../../auth/useAuth";
 import { doSignOut } from "../../auth/auth";
 import "./ResumeGeneration.css";
 
-const buttonStyle = {
+/*const buttonStyle = {
   width: "100%",
   padding: "16px",
   border: "none",
@@ -16,7 +16,7 @@ const buttonStyle = {
   cursor: "pointer",
   boxShadow: "0 10px 25px rgba(102, 126, 234, 0.4)",
   transition: "all 0.3s",
-};
+};*/
 
 function ResumeGenerationPage() {
   const { userLoggedIn, loading, currentUser } = useAuth();
@@ -62,7 +62,7 @@ function ResumeGenerationPage() {
         body: JSON.stringify({
           userId,
           jobDescription: jobDesc,
-          jobResponsibilities: jobDesc,
+          jobResponsibilities: jobResp,
         }),
       });
 
