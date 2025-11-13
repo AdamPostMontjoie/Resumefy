@@ -3,13 +3,21 @@ import { useNavigate } from "react-router-dom";
 import axios from 'axios'
 import { useAuth } from "../../auth/useAuth";
 import "./ProfileCreation.css"; 
+import Select from 'react-select'
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import institutions from './us_institutions.json'
+import degrees from './degrees.json'
+import majors from './majors.json'
 
 const CollapsibleSection = ({ title, children, expandAllTrigger }) => {
   const [open, setOpen] = useState(true);
+  
 
   useEffect(() => {
     if (expandAllTrigger) setOpen(true);
   }, [expandAllTrigger]);
+  
 
   return (
     <section className="collapsible-section">
@@ -36,6 +44,30 @@ const CollapsibleSection = ({ title, children, expandAllTrigger }) => {
 };
 
 const ProfileCreationPage = () => {
+  const [collegeList,setCollegeList] = useState([])
+  const [degreesList, setDegreesList] = useState([])
+  const [majorsList, setMajorsList] = useState([])
+  useEffect(() => {
+    const formattedColleges = institutions.map(college => ({
+      value: college.name,
+      label: college.name
+    }));
+    setCollegeList(formattedColleges);
+  }, []);
+  useEffect(()=>{
+    const formattedDegrees = degrees.map( degree =>({
+      value: degree.type,
+      label: degree.type
+    }))
+    setDegreesList(formattedDegrees)
+  },[])
+  useEffect(()=>{
+    const formattedMajors = majors.map( major =>({
+      value: major.major,
+      label: major.major
+    }))
+    setMajorsList(formattedMajors)
+  },[])
   const [personalInfo, setPersonalInfo] = useState({
     firstname:"",
     lastname:"",
@@ -48,7 +80,7 @@ const ProfileCreationPage = () => {
     { institution: "", dates: "", major: "", minor: "", degree: "", gpa: "" },
   ]);
   const [workExperience, setWorkExperience] = useState([
-    { title: "", company: "", dates: "", description: "", location: "" },
+    { title: "", company: "", startDate: "", endDate:"", description: "", location: "" },
   ]);
   const [skills, setSkills] = useState([""]);
 
@@ -95,7 +127,7 @@ const ProfileCreationPage = () => {
           setWorkExperience(
             profile.work && profile.work.length > 0 
               ? profile.work 
-              : [{ title: "", company: "", dates: "", description: "", location: "" }]
+              : [{ title: "", company: "", startDate:"", endDate:"",  description: "", location: "" }]
           );   
           setSkills(
             profile.skills && profile.skills.length > 0 
@@ -123,6 +155,13 @@ const ProfileCreationPage = () => {
   // Handlers
   const handlePersonalChange = (e) => {
     const { name, value } = e.target;
+    if (name === "phone") {
+      const numericValue = value.replace(/[^0-9]/g, '');
+      setPersonalInfo({ ...personalInfo, [name]: numericValue });
+
+    } else {
+      setPersonalInfo({ ...personalInfo, [name]: value });
+    }
     setPersonalInfo({ ...personalInfo, [name]: value });
   };
   const handleEducationChange = (i, e) => {
@@ -154,9 +193,15 @@ const ProfileCreationPage = () => {
   };
 
   // Add/remove
-  const addEducation = () => setEducation([...education, { institution: "", dates: "", major: "", minor: "", degree: "", gpa: "" }]);
+const addEducation = () => {
+    const today = new Date().toISOString().split('T')[0];
+    setEducation([...education, { institution: "", dates: today, major: "", minor: "", degree: "", gpa: "" }]);
+  };
   const removeEducation = (i) => setEducation(education.filter((_, x) => x !== i));
-  const addWork = () => setWorkExperience([...workExperience, { title: "", company: "", dates: "", description: "", location: "" }]);
+ const addWork = () => {
+    const today = new Date().toISOString().split('T')[0];
+    setWorkExperience([...workExperience, { title: "", company: "", startDate:"", endDate: today, description: "", location: "" }]);
+  };
   const removeWork = (i) => setWorkExperience(workExperience.filter((_, x) => x !== i));
   const addSkill = () => setSkills([...skills, ""]);
   const removeSkill = (i) => setSkills(skills.filter((_, x) => x !== i));
@@ -203,28 +248,108 @@ const ProfileCreationPage = () => {
     <button onClick={() => { navigate('/')}} className="back-to-main">Ex</button>
     <div className="page-container">
       <form onSubmit={handleSubmit} className="form">
-        <h1 className="title">Profile</h1>
+        <h1 className="title">Your Profile</h1>
         {/* Personal */}
         <CollapsibleSection title="Personal Info" expandAllTrigger={expandAllTrigger}>
           <div className="input-grid">
             <input name="firstname" placeholder="First Name" value={personalInfo.firstname} onChange={handlePersonalChange} className="input input-half" required />
             <input  name="lastname" placeholder="Last Name" value={personalInfo.lastname} onChange={handlePersonalChange} className="input input-half" required />
             <input disabled name="email" type="email" placeholder="Email" value={personalInfo.email} onChange={handlePersonalChange} className="input input-half" required />
-            <input name="phone" placeholder="Phone" value={personalInfo.phone} onChange={handlePersonalChange} className="input input-half" />
+            <input maxLength={10} type="number" name="phone" placeholder="Phone (numbers only)" value={personalInfo.phone} onChange={handlePersonalChange} className="input input-half" />
           </div>
         </CollapsibleSection>
         {/* Education */}
         <CollapsibleSection title="Education" expandAllTrigger={expandAllTrigger}>
           {education.map((edu, index) => (
             <div key={index} className="work-experience-item">
-              <input name="institution" placeholder="Institution" value={edu.institution} onChange={(e) => handleEducationChange(index, e)} className="input" required />
+              <Select
+                name="institution"
+                placeholder="Search for an institution..."
+                options={collegeList} 
+                isClearable
+                isSearchable
+                required
+                value={collegeList.find(c => c.value === edu.institution)}
+                
+                onChange={(selectedOption) => {
+                  const value = selectedOption ? selectedOption.value : "";
+                  const mockEvent = {
+                    target: {
+                      name: "institution",
+                      value: value
+                    }
+                  };
+                  handleEducationChange(index, mockEvent);
+                }}
+                
+                classNamePrefix="react-select"
+              />
               <div className="input-grid" required>
-                <input name="dates" placeholder="Dates" value={edu.dates} onChange={(e) => handleEducationChange(index, e)} className="input input-half" required/>
-                <input name="major" placeholder="Major" value={edu.major} onChange={(e) => handleEducationChange(index, e)} className="input input-half" required/>
-                <input name="minor" placeholder="Minor" value={edu.minor} onChange={(e) => handleEducationChange(index, e)} className="input input-half" />
-                <input name="degree" placeholder="Degree" value={edu.degree} onChange={(e) => handleEducationChange(index, e)} className="input input-half" required/>
+                <DatePicker
+                  name="dates"
+                  placeholderText="Dates (MM/YYYY)"
+                  selected={edu.dates ? new Date(edu.dates.replace(/-/g, '/')) : null}
+                  
+                  onChange={(date) => {
+                    const value = date ? date.toISOString().split('T')[0] : "";
+                    const mockEvent = {
+                      target: {
+                        name: "dates",
+                        value: value
+                      }
+                    };
+                    handleEducationChange(index, mockEvent);
+                  }}
+                  
+                  showMonthYearPicker
+                  dateFormat="MM/yyyy"
+                  
+                  className="input input-half"
+                />
+                <select
+                  name="major"
+                  value={edu.major}
+                  onChange={(e) => handleEducationChange(index, e)}
+                  className="input input-half"
+                  required
+                >
+                  <option value="">Select a Major</option>
+                  {majorsList.map((major)=>(
+                    <option key={major.value} value={major.value}>
+                      {major.label}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  name="minor"
+                  value={edu.minor}
+                  onChange={(e) => handleEducationChange(index, e)}
+                  className="input input-half"
+                  required
+                >
+                  <option value="">Select a Minor</option>
+                  {majorsList.map((minor)=>(
+                    <option key={minor.value} value={minor.value}>
+                      {minor.label}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  name="degree"
+                  value={edu.degree}
+                  onChange={(e) => handleEducationChange(index, e)}
+                  className="input input-half"
+                  required
+                >
+                  <option value="">Select a Degree</option>
+                  {degreesList.map((degree) => (
+                    <option key={degree.value} value={degree.value}>
+                      {degree.label}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <input name="gpa" placeholder="GPA" value={edu.gpa} onChange={(e) => handleEducationChange(index, e)} className="input input-half" />
+              <input type="number" name="gpa" placeholder="GPA" value={edu.gpa} onChange={(e) => handleEducationChange(index, e)} className="input input-half" />
               <button type="button" onClick={() => removeEducation(index)} className="remove-button">Remove</button>
             </div>
           ))}
@@ -236,7 +361,50 @@ const ProfileCreationPage = () => {
             <div key={index} className="work-experience-item">
               <input name="title" placeholder="Job Title" value={exp.title} onChange={(e) => handleWorkChange(index, e)} className="input" required />
               <input name="company" placeholder="Company" value={exp.company} onChange={(e) => handleWorkChange(index, e)} className="input" required />
-              <input name="dates" placeholder="Dates" value={exp.dates} onChange={(e) => handleWorkChange(index, e)} className="input" />
+               <DatePicker
+                  name="startDate"
+                  placeholderText="Start Date(MM/YYYY)"
+                  
+                  selected={exp.startDate ? new Date(exp.startDate.replace(/-/g, '/')) : null}
+                  
+                  onChange={(date) => {
+                    const value = date ? date.toISOString().split('T')[0] : "";
+                    const mockEvent = {
+                      target: {
+                        name: "startDate",
+                        value: value
+                      }
+                    };
+                    handleWorkChange(index, mockEvent);
+                  }}
+                  
+                  showMonthYearPicker
+                  dateFormat="MM/yyyy"
+                  
+                  className="input input-half"
+                />
+                <DatePicker
+                  name="endDate"
+                  placeholderText="End Date(MM/YYYY)"
+                  
+                  selected={exp.endtDate ? new Date(exp.endDate.replace(/-/g, '/')) : null}
+                  
+                  onChange={(date) => {
+                    const value = date ? date.toISOString().split('T')[0] : "";
+                    const mockEvent = {
+                      target: {
+                        name: "endDate",
+                        value: value
+                      }
+                    };
+                    handleWorkChange(index, mockEvent);
+                  }}
+                  
+                  showMonthYearPicker
+                  dateFormat="MM/yyyy"
+                  
+                  className="input  input-half"
+                />
               <textarea name="description" placeholder="Write a short description of the work experience..." value={exp.description} onChange={(e) => handleWorkChange(index, e)} className="textarea" required/>
               <input name="location" placeholder="Location" value={exp.location} onChange={(e) => handleWorkChange(index, e)} className="input" />
               <button type="button" onClick={() => removeWork(index)} className="remove-button">Remove</button>

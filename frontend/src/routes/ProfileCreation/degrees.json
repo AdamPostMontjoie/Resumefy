@@ -1,0 +1,20 @@
+[   
+    {
+        "type":"Some College"
+    },
+    {
+        "type":"Associate Degree"
+    },
+    {
+        "type":"Bachelor's Degree"
+    },
+    {
+        "type":"Master's Degree"
+    },
+    {
+        "type":"Doctorate"
+    },
+    {
+        "type":"Other"
+    }
+]

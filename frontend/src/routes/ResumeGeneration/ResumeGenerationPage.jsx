@@ -91,10 +91,7 @@ function ResumeGenerationPage() {
   };
 
 return (
-    <div>
-
     <div style={{ minHeight: '100vh', backgroundColor: '#F7EBDF' }}>
-
     <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '25px 40px', borderBottom: '1px solid #000000ff'}}>
       <button onClick={() => { navigate('/')}} className="quickOptions">Ex</button>
       <h1 style={{ margin: 0, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>Create Your Resume</h1>
@@ -115,7 +112,7 @@ return (
       </div>
 
       <div style={{position: 'absolute', left: '54%', transform: 'translateX(-50%)'}}>
-                <button onClick={handleGenerate} style={{ padding: '16px', marginBottom: '10px' }} className="loginButton" disabled={isGenerating}>{isGenerating ? 'Generating...' : 'Generate Resume'}</button>
+        <button onClick={handleGenerate} style={{ padding: '16px', marginBottom: '10px' }} className="loginButton" disabled={isGenerating}>{isGenerating ? 'Generating...' : 'Generate Resume'>Generate Resume</button>
         {pdfUrl && (
                 <div style={{ marginTop: '20px' }}>
                   <p style={{ color: '#2563eb', fontWeight: '600', marginBottom: '8px' }}>✅ Resume Generated!</p>
@@ -123,7 +120,7 @@ return (
                 </div>
               )}
       </div>
-    </div>
+
     <div style={{ display: 'flex', gap: '30px' }}>
       
       <div style={{ flex: 1}}>
@@ -139,7 +136,6 @@ return (
     </div>
     </div>
   </div>
-);
+)
 }
-
 export default ResumeGenerationPage
