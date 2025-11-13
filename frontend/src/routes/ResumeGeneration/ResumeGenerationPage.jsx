@@ -4,19 +4,19 @@ import { useAuth } from "../../auth/useAuth";
 import { doSignOut } from "../../auth/auth";
 import "./ResumeGeneration.css";
 
-const buttonStyle = {
-  width: "100%",
-  padding: "16px",
-  border: "none",
-  borderRadius: "12px",
-  background: "linear-gradient(135deg, #372414 0%, #372414 100%)",
-  color: "white",
-  fontSize: "1rem",
-  fontWeight: "600",
-  cursor: "pointer",
-  boxShadow: "0 10px 25px rgba(102, 126, 234, 0.4)",
-  transition: "all 0.3s",
-};
+// const buttonStyle = {
+//   width: "100%",
+//   padding: "16px",
+//   border: "none",
+//   borderRadius: "12px",
+//   background: "linear-gradient(135deg, #372414 0%, #372414 100%)",
+//   color: "white",
+//   fontSize: "1rem",
+//   fontWeight: "600",
+//   cursor: "pointer",
+//   boxShadow: "0 10px 25px rgba(102, 126, 234, 0.4)",
+//   transition: "all 0.3s",
+// };
 
 function ResumeGenerationPage() {
   const { userLoggedIn, loading, currentUser } = useAuth();
@@ -87,10 +87,7 @@ function ResumeGenerationPage() {
   };
 
 return (
-    <div>
-
     <div style={{ minHeight: '100vh', backgroundColor: '#F7EBDF' }}>
-
     <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '25px 40px', borderBottom: '1px solid #000000ff'}}>
       <button onClick={() => { navigate('/')}} className="quickOptions">Ex</button>
       <h1 style={{ margin: 0, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>Create Your Resume</h1>
@@ -136,7 +133,6 @@ return (
     </div>
     </div>
   </div>
-);
+)
 }
-
 export default ResumeGenerationPage
