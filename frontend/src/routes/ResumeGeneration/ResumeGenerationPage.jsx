@@ -129,10 +129,8 @@ return (
         <div style={{ padding: '10px', borderBottom: '1px solid #e5e7eb', borderLeft: '1px solid #000000ff', borderRight: '1px solid #000000ff', borderTop: '1px solid #000000ff', backgroundColor: '#f9fafb', fontWeight: '600'}}>Job Responsibilties</div>
           <textarea value={jobResp} onChange={(e) => setJobResp(e.target.value)} placeholder="Copy and Paste job responsibilties here..." style={{ resize: "none", width: '100%', minHeight: '250px', backgroundColor: 'white', borderRadius: '2px', borderLeft: '1px solid #000000ff', borderRight: '1px solid #000000ff', borderBottom: '1px solid #000000ff', borderTop: 'none', boxSizing: 'border-box', padding: '24px', fontSize: '1.2rem'}} />
       </div>
-
     </div>
     </div>
-  </div>
 )
 }
 export default ResumeGenerationPage
