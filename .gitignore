@@ -1,0 +1,4 @@
+node_modules/
+# Google Cloud Platform service account key
+resumefy-8e8fa-596b083f089f.json
+.gitignorefirebase.json
