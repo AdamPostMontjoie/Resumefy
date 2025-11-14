@@ -288,7 +288,7 @@ const addEducation = () => {
                 <DatePicker
                   name="dates"
                   placeholderText="Dates (MM/YYYY)"
-                  selected={edu.dates ? new Date(edu.dates.replace(/-/g, '/')) : null}
+                  selected={/^\d{4}-\d{2}-\d{2}$/.test(edu.dates) ? new Date(edu.dates.replace(/-/g, '/')) : null}
                   
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
@@ -365,7 +365,7 @@ const addEducation = () => {
                   name="startDate"
                   placeholderText="Start Date(MM/YYYY)"
                   
-                  selected={exp.startDate ? new Date(exp.startDate.replace(/-/g, '/')) : null}
+                 selected={/^\d{4}-\d{2}-\d{2}$/.test(exp.startDate) ? new Date(exp.startDate.replace(/-/g, '/')) : null}
                   
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
@@ -387,7 +387,7 @@ const addEducation = () => {
                   name="endDate"
                   placeholderText="End Date(MM/YYYY)"
                   
-                  selected={exp.endtDate ? new Date(exp.endDate.replace(/-/g, '/')) : null}
+                  selected={/^\d{4}-\d{2}-\d{2}$/.test(exp.endDate) ? new Date(exp.endDate.replace(/-/g, '/')) : null}
                   
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
