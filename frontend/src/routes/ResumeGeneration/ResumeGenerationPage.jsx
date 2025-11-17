@@ -45,6 +45,10 @@ function ResumeGenerationPage() {
       alert("Please paste a job description before generating.");
       return;
     }
+    if (!jobResp.trim()) {
+      alert("Please paste a job responsibilities before generating.");
+      return;
+    }
 
     try {
       setIsGenerating(true);
