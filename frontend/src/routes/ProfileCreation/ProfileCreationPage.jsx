@@ -252,17 +252,29 @@ const addEducation = () => {
         {/* Personal */}
         <CollapsibleSection title="Personal Info" expandAllTrigger={expandAllTrigger}>
           <div className="input-grid">
-            <input name="firstname" placeholder="First Name" value={personalInfo.firstname} onChange={handlePersonalChange} className="input input-half" required />
-            <input  name="lastname" placeholder="Last Name" value={personalInfo.lastname} onChange={handlePersonalChange} className="input input-half" required />
-            <input disabled name="email" type="email" placeholder="Email" value={personalInfo.email} onChange={handlePersonalChange} className="input input-half" required />
-            <input maxLength={10} type="number" name="phone" placeholder="Phone (numbers only)" value={personalInfo.phone} onChange={handlePersonalChange} className="input input-half" />
+            <div className="required">
+              <input name="firstname" placeholder="First Name" value={personalInfo.firstname} onChange={handlePersonalChange} className="input input-half" required />
+              <span className="asterisk">*</span>
+            </div>
+            <div className="required">
+              <input  name="lastname" placeholder="Last Name" value={personalInfo.lastname} onChange={handlePersonalChange} className="input input-half" required />
+              <span className="asterisk">*</span>
+            </div>
+            <div className="required">
+              <input disabled name="email" type="email" placeholder="Email" value={personalInfo.email} onChange={handlePersonalChange} className="input input-half" required />
+              <span className="asterisk">*</span>
+            </div>
+            <div className="required">
+              <input maxLength={10} type="number" name="phone" placeholder="Phone (numbers only)" value={personalInfo.phone} onChange={handlePersonalChange} className="input input-half" />
+              <span className="asterisk">*</span>
+            </div>
           </div>
         </CollapsibleSection>
         {/* Education */}
         <CollapsibleSection title="Education" expandAllTrigger={expandAllTrigger}>
           {education.map((edu, index) => (
             <div key={index} className="work-experience-item">
-              <Select
+              <Select className="dropdown"
                 name="institution"
                 placeholder="Search for an institution..."
                 options={collegeList} 
