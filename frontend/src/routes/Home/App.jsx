@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, {useRef} from "react";
 import logo from "../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
 import "./App.css"
@@ -6,7 +6,6 @@ import "./App.css"
 function App() {
   const navigate = useNavigate();
 
-  // 🔗 section refs
   const homeRef = useRef(null);
   const aboutRef = useRef(null);
   const featuresRef = useRef(null);
@@ -16,7 +15,9 @@ function App() {
     ref.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const goToLogin = () => navigate("/login");
+  const goToLogin = () => {
+    navigate("/login");
+  };
 
   return (
     <div
@@ -44,7 +45,7 @@ function App() {
           maxWidth: "1200px",
         }}
       >
-       <img
+        <img
         src={logo}
         alt="Resumefy Logo"
         style={{
@@ -57,43 +58,25 @@ function App() {
         />
 
         <nav style={{ display: "flex", gap: "25px" }}>
-<<<<<<< HEAD
-          <button onCLick="#" className="navLink">
+          <button onClick={() => scrollToSection(homeRef)} className="navLink">
             Home
           </button>
-          <button onClick="#" className="navLink">
+          <button onClick={() => scrollToSection(aboutRef)} className="navLink">
             About
           </button>
-          <button onClick="#" className="navLink">
+          <button onClick={() => scrollToSection(featuresRef)} className="navLink">
             Features
           </button>
-          <button onClick="#" className="navLink">
+          <button onClick={() => scrollToSection(contactRef)} className="navLink">
             Contact
           </button>
           <button onClick={goToLogin} className="loginButton">
-=======
-          <button style={navLink} onClick={() => scrollToSection(homeRef)}>
-            Home
-          </button>
-          <button style={navLink} onClick={() => scrollToSection(aboutRef)}>
-            About
-          </button>
-          <button style={navLink} onClick={() => scrollToSection(featuresRef)}>
-            Features
-          </button>
-          <button style={navLink} onClick={() => scrollToSection(contactRef)}>
-            Contact
-          </button>
-          <button onClick={goToLogin} style={loginButton}>
->>>>>>> ccc3036 (Updated Home page)
             Sign In
           </button>
         </nav>
       </header>
 
-      {/* HERO SECTION */}
       <section
-        ref={homeRef}
         style={{
           textAlign: "center",
           maxWidth: "800px",
@@ -129,7 +112,6 @@ function App() {
         </button>
       </section>
 
-      {/* CORE VALUES SECTION */}
       <section
         style={{
           marginTop: "100px",
@@ -323,88 +305,84 @@ function App() {
         </button>
       </section>
 
-      {/* TESTIMONIALS SECTION */}
+
+
       <section
+  style={{
+    marginTop: "120px",
+    textAlign: "center",
+    maxWidth: "1100px",
+  }}
+>
+  <h3
+    style={{
+      fontSize: "2.2rem",
+      fontWeight: "700",
+      marginBottom: "50px",
+      fontFamily: "'Playfair Display', serif",
+    }}
+  >
+    What Our Users Say
+  </h3>
+
+  <div
+    style={{
+      display: "flex",
+      flexWrap: "wrap",
+      justifyContent: "center",
+      gap: "30px",
+    }}
+  >
+    {[
+      {
+        name: "Samantha Lee",
+        role: "Marketing Graduate",
+        text: "Resumefy made applying for jobs so much easier. My resume finally looks professional and modern!",
+      },
+      {
+        name: "Ishaan Patel",
+        role: "Software Engineer",
+        text: "I love how quick and personalized it was. My resume quality is at its best as well.",
+      },
+      {
+        name: "Alicia Gomez", 
+        role: "Product Manager",
+        text: "Within a week of using Resumefy, I landed three interviews. It's honestly a gamechanger.",
+      },
+    ].map((review, i) => (
+      <div
+        key={i}
         style={{
-          marginTop: "120px",
-          textAlign: "center",
-          maxWidth: "1100px",
+          background: "white",
+          borderRadius: "18px",
+          padding: "35px 30px",
+          width: "320px",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+          textAlign: "left",
+          transition: "transform 0.2s",
         }}
       >
-        <h3
+        <p
           style={{
-            fontSize: "2.2rem",
-            fontWeight: "700",
-            marginBottom: "50px",
-            fontFamily: "'Playfair Display', serif",
+            fontSize: "1.05rem",
+            color: "#4a3b31",
+            lineHeight: "1.6",
+            marginBottom: "20px",
           }}
         >
-          What Our Users Say
-        </h3>
-
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            gap: "30px",
-          }}
-        >
-          {[
-            {
-              name: "Samantha Lee",
-              role: "Marketing Graduate",
-              text: "Resumefy made applying for jobs so much easier. My resume finally looks professional and modern!",
-            },
-            {
-              name: "Ishaan Patel",
-              role: "Software Engineer",
-              text: "I love how quick and personalized it was. My resume quality is at its best as well.",
-            },
-            {
-              name: "Alicia Gomez",
-              role: "Product Manager",
-              text: "Within a week of using Resumefy, I landed three interviews. It's honestly a gamechanger.",
-            },
-          ].map((review, i) => (
-            <div
-              key={i}
-              style={{
-                background: "white",
-                borderRadius: "18px",
-                padding: "35px 30px",
-                width: "320px",
-                boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-                textAlign: "left",
-                transition: "transform 0.2s",
-              }}
-            >
-              <p
-                style={{
-                  fontSize: "1.05rem",
-                  color: "#4a3b31",
-                  lineHeight: "1.6",
-                  marginBottom: "20px",
-                }}
-              >
-                “{review.text}”
-              </p>
-              <div>
-                <strong style={{ fontSize: "1.1rem" }}>{review.name}</strong>
-                <p
-                  style={{
-                    margin: "4px 0",
-                    color: "#7b6b5b",
-                    fontSize: "0.95rem",
-                  }}
-                >
-                  {review.role}
-                </p>
-              </div>
-            </div>
-          ))}
+          “{review.text}”
+        </p>
+        <div>
+          <strong style={{ fontSize: "1.1rem" }}>{review.name}</strong>
+          <p style={{ margin: "4px 0", color: "#7b6b5b", fontSize: "0.95rem" }}>
+            {review.role}
+          </p>
         </div>
-      </section>
+      </div>
+    ))}
+  </div>
+</section>
+
 
       <footer
         style={{
@@ -418,11 +396,8 @@ function App() {
     </div>
   );
 }
-<<<<<<< HEAD
-=======
 
-/* ===== STYLES ===== */
-const navLink = {
+/*const navLink = {
   background: "none",
   border: "none",
   textDecoration: "none",
@@ -441,8 +416,7 @@ const loginButton = {
   padding: "10px 18px",
   fontWeight: "600",
   cursor: "pointer",
-};
->>>>>>> ccc3036 (Updated Home page)
+};*/
 
 const ctaButton = {
   background: "linear-gradient(135deg, #372414 0%, #372414 100%)",
