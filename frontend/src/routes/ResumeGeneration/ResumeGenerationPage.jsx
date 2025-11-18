@@ -107,10 +107,12 @@ return (
         <p style={{ color: '#6b7280', margin: 0 }}> Click "Generate Resume" when done </p>
       </div>
 
-      <div style={{position: 'absolute', left: '54%', transform: 'translateX(-50%)'}}>
+      <div style={{position: 'absolute', left: '54%', transform: 'translateX(-50%)', minHeight: '150px'}}>
+        <div style={{ textAlign: 'center' }}>
         <button onClick={handleGenerate} style={{ padding: '16px', marginBottom: '10px' }} className="loginButton" disabled={isGenerating}>{isGenerating ? 'Generating...' : 'Generate Resume'}</button>
+        </div>
         {pdfUrl && (
-                <div style={{ marginTop: '20px' }}>
+                <div style={{ marginTop: '20px', textAlign: 'left', width: '300px', marginLeft: '150px' }}>
                   <p style={{ color: '#2563eb', fontWeight: '600', marginBottom: '8px' }}>✅ Resume Generated!</p>
                   <a href={pdfUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#1d4ed8', textDecoration: 'underline', wordBreak: 'break-all' }}>{pdfUrl}</a>
                 </div>
