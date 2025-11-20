@@ -56,6 +56,9 @@ function generateLatex(data) {
 \\usepackage{fancyhdr}
 \\usepackage[english]{babel}
 \\usepackage{tabularx}
+\\usepackage[T1]{fontenc}
+\\usepackage{lmodern}
+
 \\input{glyphtounicode}
 
 %----------PAGE SETUP----------
@@ -203,7 +206,12 @@ app.post('/api/generate', async (req, res) => {
     const texFile = path.join(__dirname, 'resume.tex');
     const pdfFile = path.join(__dirname, 'resume.pdf');
 
-    fs.writeFileSync(texFile, generateLatex(data), 'utf8');
+    fs.writeFileSync(
+      texFile,
+      generateLatex(data).replace(/\r\n/g, '\n').replace(/\r/g, '\n'),
+      'utf8'
+    );
+
     console.log('LaTeX file written at:', texFile);
 
     exec(
