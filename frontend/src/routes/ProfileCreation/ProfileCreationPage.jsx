@@ -77,7 +77,7 @@ const ProfileCreationPage = () => {
   });
 
   const [education, setEducation] = useState([
-    { institution: "", dates: "", major: "", minor: "", degree: "", gpa: "" },
+    { institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", gpa: "" },
   ]);
   const [workExperience, setWorkExperience] = useState([
     { title: "", company: "", startDate: "", endDate:"", description: [""], location: "" },
@@ -125,7 +125,7 @@ const ProfileCreationPage = () => {
           setEducation(
             profile.education && profile.education.length > 0 
               ? profile.education 
-              : [{ institution: "", dates: "", major: "", minor: "", degree: "", gpa: "" }]
+              : [{ institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", gpa: "" }]
           );
           setWorkExperience(
             profile.work && profile.work.length > 0 
@@ -335,7 +335,6 @@ const ProfileCreationPage = () => {
             </div>
             <div className="required">
               <input maxLength={10} type="number" name="phone" placeholder="Phone (numbers only)" value={personalInfo.phone} onChange={handlePersonalChange} className="input input-half" />
-              <span className="asterisk">*</span>
             </div>
           </div>
         </CollapsibleSection>
@@ -343,6 +342,7 @@ const ProfileCreationPage = () => {
         <CollapsibleSection title="Education" expandAllTrigger={expandAllTrigger}>
           {education.map((edu, index) => (
             <div key={index} className="work-experience-item">
+              <div className="required">
               <Select className="dropdown"
                 name="institution"
                 placeholder="Search for an institution..."
@@ -365,17 +365,19 @@ const ProfileCreationPage = () => {
                 
                 classNamePrefix="react-select"
               />
+              <span className="asterisk">*</span>
+              </div>
               <div className="input-grid" required>
                 <DatePicker
-                  name="dates"
-                  placeholderText="Dates (MM/YYYY)"
-                  selected={edu.dates ? new Date(edu.dates.replace(/-/g, '/')) : null}
+                  name="startDate"
+                  placeholderText="Start Date (MM/YYYY)"
+                  selected={edu.startDate ? new Date(edu.startDate.replace(/-/g, '/')) : null}
                   
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
                     const mockEvent = {
                       target: {
-                        name: "dates",
+                        name: "startDate",
                         value: value
                       }
                     };
@@ -387,6 +389,29 @@ const ProfileCreationPage = () => {
                   
                   className="input input-half"
                 />
+                <DatePicker
+                  name="endDate"
+                  placeholderText="End Date(MM/YYYY)"
+                  
+                  selected={edu.endDate ? new Date(edu.endDate.replace(/-/g, '/')) : null}
+                  
+                  onChange={(date) => {
+                    const value = date ? date.toISOString().split('T')[0] : "";
+                    const mockEvent = {
+                      target: {
+                        name: "endDate",
+                        value: value
+                      }
+                    };
+                    handleEducationChange(index, mockEvent);
+                  }}
+                  
+                  showMonthYearPicker
+                  dateFormat="MM/yyyy"
+                  
+                  className="input  input-half"
+                />
+                <div className="required">
                 <select
                   name="major"
                   value={edu.major}
@@ -401,6 +426,9 @@ const ProfileCreationPage = () => {
                     </option>
                   ))}
                 </select>
+                <span className="asterisk">*</span>
+                </div>
+                <div className="required">
                 <select
                   name="minor"
                   value={edu.minor}
@@ -415,6 +443,9 @@ const ProfileCreationPage = () => {
                     </option>
                   ))}
                 </select>
+                <span className="asterisk">*</span>
+                </div>
+                <div className="required">
                 <select
                   name="degree"
                   value={edu.degree}
@@ -429,8 +460,10 @@ const ProfileCreationPage = () => {
                     </option>
                   ))}
                 </select>
+                <span className="asterisk">*</span>
+                </div>
               </div>
-              <input type="number" name="gpa" placeholder="GPA" value={edu.gpa} onChange={(e) => handleEducationChange(index, e)} className="input input-half" />
+              {/* <input type="number" name="gpa" placeholder="GPA" value={edu.gpa} onChange={(e) => handleEducationChange(index, e)} className="input input-half" /> */}
               <button type="button" onClick={() => removeEducation(index)} className="remove-button">Remove</button>
             </div>
           ))}
