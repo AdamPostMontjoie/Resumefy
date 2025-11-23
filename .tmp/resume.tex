@@ -1,0 +1,63 @@
+
+\documentclass[letterpaper,11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+\setlength{\tabcolsep}{0pt}
+\raggedright
+\raggedbottom
+
+\titleformat{\section}{\vspace{-4pt}\scshape\large}{}{0em}{\titlerule\vspace{-5pt}}
+
+\newcommand{\resumeItem}[1]{\item\small{#1\vspace{-2pt}}}
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small #3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}[leftmargin=0.2in]}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+\begin{document}
+
+\begin{center}
+  {\Huge \bfseries  } \\[4pt]
+   \textbar{}  \href{mailto:}{} \textbar{}
+  \href{}{} \textbar{}
+  \href{}{}
+\end{center}
+
+\section{Education}
+\resumeSubHeadingListStart
+
+\resumeSubHeadingListEnd
+
+\section{Experience}
+\resumeSubHeadingListStart
+
+\resumeSubHeadingListEnd
+
+\section{Projects}
+\resumeSubHeadingListStart
+
+\resumeSubHeadingListEnd
+
+\section{Skills}
+\begin{itemize}[leftmargin=0.15in, label={}]
+  \item[] \textbf{Languages:} 
+  \item[] \textbf{Frameworks:} 
+  \item[] \textbf{Developer Tools:} 
+  \item[] \textbf{Libraries:} 
+\end{itemize}
+
+\end{document}
