@@ -28,6 +28,7 @@ const db = admin.firestore();
 
 
 // for latex generation
+
 function generateLatex(data) {
   const personal = data.personal || {};
   const education = data.education || [];
