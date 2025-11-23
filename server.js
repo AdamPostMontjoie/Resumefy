@@ -45,87 +45,53 @@ function generateLatex(data) {
   let latex = `
 \\documentclass[letterpaper,11pt]{article}
 
-\\usepackage{latexsym}
-\\usepackage[empty]{fullpage}
-\\usepackage{titlesec}
-\\usepackage{marvosym}
-\\usepackage[usenames,dvipsnames]{color}
-\\usepackage{verbatim}
-\\usepackage{enumitem}
+% ---- Minimal packages ----
+\\usepackage[margin=1in]{geometry}
 \\usepackage[hidelinks]{hyperref}
-\\usepackage{fancyhdr}
+\\usepackage{titlesec}
+\\usepackage{enumitem}
 \\usepackage[english]{babel}
-\\usepackage{tabularx}
 \\usepackage[T1]{fontenc}
 \\usepackage{lmodern}
 
-\\input{glyphtounicode}
+\\usepackage{setspace}
+\\setstretch{0.95}
 
-%----------PAGE SETUP----------
-\\pagestyle{fancy}
-\\fancyhf{}
-\\fancyfoot{}
-\\renewcommand{\\headrulewidth}{0pt}
-\\renewcommand{\\footrulewidth}{0pt}
-
-% Margins
-\\addtolength{\\oddsidemargin}{-0.5in}
-\\addtolength{\\evensidemargin}{-0.5in}
-\\addtolength{\\textwidth}{1in}
-\\addtolength{\\topmargin}{-.5in}
-\\addtolength{\\textheight}{1.0in}
-
-\\urlstyle{same}
-\\raggedbottom
+% ---- Formatting ----
+\\setlength{\\tabcolsep}{0pt}
 \\raggedright
-\\setlength{\\tabcolsep}{0in}
+\\raggedbottom
 
-% Section formatting to match template
-\\titleformat{\\section}{
-  \\vspace{-4pt}\\scshape\\raggedright\\large
-}{}{0em}{}[\\color{black}\\titlerule \\vspace{-5pt}]
+\\usepackage{titlesec}
 
-% Ensure PDF is ATS-readable
-\\pdfgentounicode=1
+\\titleformat{\\section}
+  {\\vspace{-4pt}\\scshape\\large} % formatting of section title
+  {}                             % label (we don’t use numbering)
+  {0em}                          % horizontal separation
+  {}                             % before-code (leave empty)
+  [\\vspace{1pt}\\titlerule]       % after-code: put line below title
 
-\\newcommand{\\resumeItem}[1]{
-  \\item\\small{
-    {#1 \\vspace{-2pt}}
-  }
-}
+
+\\pdfgentounicode=1 \\newcommand{\\resumeItem}[1]{ \\item\\small{ {#1 \\vspace{-2pt}} } }
 
 \\newcommand{\\resumeSubheading}[4]{
   \\vspace{-2pt}\\item
-    \\begin{tabular*}{0.97\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
-      \\textbf{#1} & #2 \\
-      \\textit{\\small#3} & \\textit{\\small #4} \\
-    \\end{tabular*}\\vspace{-7pt}
-}
-
-\\newcommand{\\resumeSubSubheading}[2]{
-    \\item
-    \\begin{tabular*}{0.97\\textwidth}{l@{\\extracolsep{\\fill}}r}
-      \\textit{\\small#1} & \\textit{\\small #2} \\
-    \\end{tabular*}\\vspace{-7pt}
-}
-
-\\newcommand{\\resumeProjectHeading}[2]{
-    \\item
-    \\begin{tabular*}{0.97\\textwidth}{l@{\\extracolsep{\\fill}}r}
-      \\small#1 & #2 \\
+    \\begin{tabular*}{\\textwidth}{l@{\\extracolsep{\\fill}}r}
+      \\textbf{#1} & #2 \\\\
+      \\textit{\\small #3} & \\textit{\\small #4} \\\\
     \\end{tabular*}\\vspace{-7pt}
 }
 
 \\newcommand{\\resumeSubItem}[1]{\\resumeItem{#1}\\vspace{-4pt}}
 
-\\renewcommand\\labelitemii{$\\vcenter{\\hbox{\\tiny$\\bullet$}}$}
-
 \\newcommand{\\resumeSubHeadingListStart}{\\begin{itemize}[leftmargin=0.15in, label={}]}
 \\newcommand{\\resumeSubHeadingListEnd}{\\end{itemize}}
-\\newcommand{\\resumeItemListStart}{\\begin{itemize}}
+\\newcommand{\\resumeItemListStart}{\\begin{itemize}[leftmargin=0.2in]}
 \\newcommand{\\resumeItemListEnd}{\\end{itemize}\\vspace{-5pt}}
 
 \\begin{document}
+\\pagestyle{empty}
+
 
 %----------HEADING----------
 \\begin{center}
@@ -142,7 +108,7 @@ function generateLatex(data) {
   education.forEach((ed) => {
     latex += `
 \\hspace{0.3cm} \\textbf{${escapeLatex(ed.institution)}} \\hfill ${escapeLatex(ed.location)} \\\\
-\\hspace{0.3cm} \\textit{${escapeLatex(ed.degree)}} \\hfill \\textit{${escapeLatex(ed.dates)}} 
+\\hspace{0.3cm} \\textit{${escapeLatex(ed.degree)}} \\hfill ${escapeLatex(ed.beginningdate)} - ${escapeLatex(ed.endingdate)}
 `;
   });
 
@@ -151,7 +117,7 @@ function generateLatex(data) {
 
   work.forEach((job) => {
     latex += `
-\\hspace{0.3cm} \\textbf{${escapeLatex(job.title)}} \\hfill ${escapeLatex(job.dates)} \\\\
+\\hspace{0.3cm} \\textbf{${escapeLatex(job.title)}} \\hfill ${escapeLatex(job.beginningdate)} - ${escapeLatex(job.endingdate)} \\\\
 \\hspace{0.3cm} \\textit{${escapeLatex(job.company)}} \\hfill \\textit{${escapeLatex(job.location)}} 
 \\hspace{0.3cm}\\begin{itemize}[leftmargin=0.4in, label={$\\vcenter{\\hbox{\\tiny$\\bullet$}}$}, itemsep=0pt] 
 `;
@@ -169,7 +135,7 @@ function generateLatex(data) {
     latex += `
 \\hspace{0.3cm}\\vspace{0pt}\\textbf{${escapeLatex(key)}} $|$ \\textit{${escapeLatex(
       proj.stack
-    )}} \\hfill ${escapeLatex(proj.dates)} 
+    )}} \\hfill ${escapeLatex(proj.beginningdate)} - ${escapeLatex(proj.endingdate)}
 \\hspace{0.3cm}\\begin{itemize}[leftmargin=0.4in, label={$\\vcenter{\\hbox{\\tiny$\\bullet$}}$}, itemsep=0pt]
 `;
     (proj.details || []).forEach(
