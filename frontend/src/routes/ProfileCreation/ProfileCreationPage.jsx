@@ -557,7 +557,7 @@ const ProfileCreationPage = () => {
                 />
                 Present
               </label>
-              {Array.isArray(exp.description) ? exp.description : [].map((desc, descI) => (
+              {exp.description.map((desc, descI) => (
               <div key={descI} className="list-item-container">
                 <input placeholder="Description" value={desc} onChange={(e) => handleDescChange(index, descI, e)} className="input input-flex"/>
                 <button type="button" onClick={() => removeDescription(index, descI)} className="remove-button">Remove</button>
