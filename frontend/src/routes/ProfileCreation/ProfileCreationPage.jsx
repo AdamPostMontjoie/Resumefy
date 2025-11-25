@@ -125,17 +125,17 @@ const ProfileCreationPage = () => {
           setEducation(
             profile.education && profile.education.length > 0 
               ? profile.education 
-              : [{ institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", gpa: "" }]
+              : [{ institution: "", startDate: "", endDate:"", present: false, major: "", minor: "", degree: "", gpa: "" }]
           );
           setWorkExperience(
             profile.work && profile.work.length > 0 
               ? profile.work 
-              : [{ title: "", company: "", startDate: "", endDate:"", description: [""], location: "" }]
+              : [{ title: "", company: "", startDate: "", endDate:"", present: false, description: [""], location: "" }]
           );   
           setProjects(
             profile.projects && profile.projects.length > 0
               ? profile.projects 
-              : [{ title: "", tools: [""], startDate: "", endDate:"", descriptions: [""] }]
+              : [{ title: "", tools: [""], startDate: "", endDate:"", present: false, descriptions: [""] }]
           );
           setSkills(
             profile.skills && profile.skills.length > 0 
@@ -222,6 +222,25 @@ const ProfileCreationPage = () => {
     updated[i] = e.target.value;
     setWebsites(updated);
   };
+  const handleEducationPresentChange = (i, e) => {
+    const updated = [...education];
+    updated[i].present = e.target.checked;
+    updated[i].endDate = e.target.checked ? "Present" : "";
+    setEducation(updated);
+  };
+    const handleExperiencePresentChange = (i, e) => {
+    const updated = [...workExperience];
+    updated[i].present = e.target.checked;
+    updated[i].endDate = e.target.checked ? "Present" : "";
+    setEducation(updated);
+  };
+    const handleProjectPresentChange = (i, e) => {
+    const updated = [...projects];
+    updated[i].present = e.target.checked;
+    updated[i].endDate = e.target.checked ? "Present" : "";
+    setEducation(updated);
+  };
+
 
   // Add/remove
   const addEducation = () => {
@@ -314,8 +333,10 @@ const ProfileCreationPage = () => {
   return (
     <div>
     <button onClick={() => { navigate('/')}} className="back-to-main">Ex</button>
+
     <div className="page-container">
       {/* <button className="back-to-gen">Back</button> */}
+      <button onClick={() => { navigate('/resumegeneration')}} className="back-button">Back</button>
       <form onSubmit={handleSubmit} className="form">
         <h1 className="title">Your Profile</h1>
         {/* Personal */}
@@ -386,15 +407,15 @@ const ProfileCreationPage = () => {
                   
                   showMonthYearPicker
                   dateFormat="MM/yyyy"
+                  maxDate={new Date()}
                   
                   className="input input-half"
                 />
+                {!edu.present && (
                 <DatePicker
                   name="endDate"
                   placeholderText="End Date(MM/YYYY)"
-                  
                   selected={edu.endDate ? new Date(edu.endDate.replace(/-/g, '/')) : null}
-                  
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
                     const mockEvent = {
@@ -405,12 +426,21 @@ const ProfileCreationPage = () => {
                     };
                     handleEducationChange(index, mockEvent);
                   }}
-                  
                   showMonthYearPicker
                   dateFormat="MM/yyyy"
-                  
-                  className="input  input-half"
+                  maxDate={new Date()}
+                  className="input input-half"
                 />
+              )}
+              <label className="present-checkbox">
+                <input
+                  type="checkbox"
+                  checked={edu.present}
+                  onChange={(e) => handleEducationPresentChange(index, e)}
+                />
+                Present
+              </label>
+
                 <div className="required">
                 <select
                   name="major"
@@ -494,15 +524,15 @@ const ProfileCreationPage = () => {
                   
                   showMonthYearPicker
                   dateFormat="MM/yyyy"
+                  maxDate={new Date()}
                   
                   className="input input-half"
                 />
+              {!exp.present && (
                 <DatePicker
                   name="endDate"
                   placeholderText="End Date(MM/YYYY)"
-                  
                   selected={exp.endDate ? new Date(exp.endDate.replace(/-/g, '/')) : null}
-                  
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
                     const mockEvent = {
@@ -513,13 +543,21 @@ const ProfileCreationPage = () => {
                     };
                     handleWorkChange(index, mockEvent);
                   }}
-                  
                   showMonthYearPicker
                   dateFormat="MM/yyyy"
-                  
-                  className="input  input-half"
+                  maxDate={new Date()}
+                  className="input input-half"
                 />
-              {exp.description.map((desc, descI) => (
+              )}
+              <label className="present-checkbox">
+                <input
+                  type="checkbox"
+                  checked={exp.present}
+                  onChange={(e) => handleExperiencePresentChange(index, e)}
+                />
+                Present
+              </label>
+              {Array.isArray(exp.description) ? exp.description : [].map((desc, descI) => (
               <div key={descI} className="list-item-container">
                 <input placeholder="Description" value={desc} onChange={(e) => handleDescChange(index, descI, e)} className="input input-flex"/>
                 <button type="button" onClick={() => removeDescription(index, descI)} className="remove-button">Remove</button>
@@ -564,15 +602,15 @@ const ProfileCreationPage = () => {
                   
                   showMonthYearPicker
                   dateFormat="MM/yyyy"
+                  maxDate={new Date()}
                   
                   className="input input-half"
                 />
+              {!pro.present && (
                 <DatePicker
                   name="endDate"
                   placeholderText="End Date(MM/YYYY)"
-                  
                   selected={pro.endDate ? new Date(pro.endDate.replace(/-/g, '/')) : null}
-                  
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
                     const mockEvent = {
@@ -583,12 +621,20 @@ const ProfileCreationPage = () => {
                     };
                     handleProChange(index, mockEvent);
                   }}
-                  
                   showMonthYearPicker
                   dateFormat="MM/yyyy"
-                  
-                  className="input  input-half"
+                  maxDate={new Date()}
+                  className="input input-half"
                 />
+              )}
+              <label className="present-checkbox">
+                <input
+                  type="checkbox"
+                  checked={pro.present}
+                  onChange={(e) => handleProjectPresentChange(index, e)}
+                />
+                Present
+              </label>
             {pro.descriptions.map((resp, respI) => (
               <div key={respI} className="list-item-container">
                 <input placeholder="Responsibilities" value={resp} onChange={(e) => handleRespChange(index, respI, e)} className="input input-flex"/>
