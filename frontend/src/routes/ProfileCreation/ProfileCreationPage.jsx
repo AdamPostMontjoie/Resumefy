@@ -241,7 +241,7 @@ const ProfileCreationPage = () => {
   };
   const removeDescription = (workI, descI) => {
     const updated = [...workExperience];
-    updated[workI].description = updated[descI].tools.filter((_, i) => i !== descI);
+    updated[workI].description = updated[workI].description.filter((_, i) => i !== descI);
     setWorkExperience(updated);
   };
   const addPro = () => {
