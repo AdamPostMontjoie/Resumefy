@@ -115,7 +115,8 @@ function ResumeGenerationPage() {
         </div>
 
         {/* Generate button */}
-        <div style={{ position: "absolute", left: "54%", transform: "translateX(-50%)" }}>
+        <div style={{ position: "absolute", left: "54%", transform: "translateX(-50%)", minHeight: '150px' }}>
+          <div style={{textAlign: 'center'}}>
           <button
             onClick={handleGenerate}
             className="loginButton"
@@ -125,6 +126,7 @@ function ResumeGenerationPage() {
           </button>
 
           {pdfUrl && !showPdf && (
+            <div style={{ marginTop: '20px', textAlign: 'left', width: '300px', marginLeft: '150px' }}>
             <button
               onClick={() => setShowPdf(true)}
               style={{
@@ -137,7 +139,9 @@ function ResumeGenerationPage() {
             >
               View PDF
             </button>
+            </div>
           )}
+        </div>
         </div>
       </div>
 
