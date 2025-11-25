@@ -125,17 +125,17 @@ const ProfileCreationPage = () => {
           setEducation(
             profile.education && profile.education.length > 0 
               ? profile.education 
-              : [{ institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", gpa: "" }]
+              : [{ institution: "", startDate: "", endDate:"", present: false, major: "", minor: "", degree: "", gpa: "" }]
           );
           setWorkExperience(
             profile.work && profile.work.length > 0 
               ? profile.work 
-              : [{ title: "", company: "", startDate: "", endDate:"", description: [""], location: "" }]
+              : [{ title: "", company: "", startDate: "", endDate:"", present: false, description: [""], location: "" }]
           );   
           setProjects(
             profile.projects && profile.projects.length > 0
               ? profile.projects 
-              : [{ title: "", tools: [""], startDate: "", endDate:"", descriptions: [""] }]
+              : [{ title: "", tools: [""], startDate: "", endDate:"", present: false, descriptions: [""] }]
           );
           setSkills(
             profile.skills && profile.skills.length > 0 
@@ -222,6 +222,25 @@ const ProfileCreationPage = () => {
     updated[i] = e.target.value;
     setWebsites(updated);
   };
+  const handleEducationPresentChange = (i, e) => {
+    const updated = [...education];
+    updated[i].present = e.target.checked;
+    updated[i].endDate = e.target.checked ? "Present" : "";
+    setEducation(updated);
+  };
+    const handleExperiencePresentChange = (i, e) => {
+    const updated = [...workExperience];
+    updated[i].present = e.target.checked;
+    updated[i].endDate = e.target.checked ? "Present" : "";
+    setEducation(updated);
+  };
+    const handleProjectPresentChange = (i, e) => {
+    const updated = [...projects];
+    updated[i].present = e.target.checked;
+    updated[i].endDate = e.target.checked ? "Present" : "";
+    setEducation(updated);
+  };
+
 
   // Add/remove
   const addEducation = () => {
@@ -370,23 +389,57 @@ const ProfileCreationPage = () => {
               <span className="asterisk">*</span>
               </div>
               <div className="input-grid" required>
-              <DatePicker
-                selectsRange
-                startDate={edu.startDate ? new Date(edu.startDate) : null}
-                endDate={edu.endDate ? new Date(edu.endDate) : null}
-                onChange={(dates) => {
-                  const [start, end] = dates;
-                  const updatedStart = start ? start.toISOString().split("T")[0] : "";
-                  const updatedEnd = end ? end.toISOString().split("T")[0] : "";
-
-                  handleEducationChange(index, { target: { name: "startDate", value: updatedStart } });
-                  handleEducationChange(index, { target: { name: "endDate", value: updatedEnd } });
-                }}
-                placeholderText="Start Date – End Date"
-                showMonthYearPicker
-                dateFormat="MM/yyyy"
-                className="input"
-              />
+                <DatePicker
+                  name="startDate"
+                  placeholderText="Start Date (MM/YYYY)"
+                  selected={edu.startDate ? new Date(edu.startDate.replace(/-/g, '/')) : null}
+                  
+                  onChange={(date) => {
+                    const value = date ? date.toISOString().split('T')[0] : "";
+                    const mockEvent = {
+                      target: {
+                        name: "startDate",
+                        value: value
+                      }
+                    };
+                    handleEducationChange(index, mockEvent);
+                  }}
+                  
+                  showMonthYearPicker
+                  dateFormat="MM/yyyy"
+                  maxDate={new Date()}
+                  
+                  className="input input-half"
+                />
+                {!edu.present && (
+                <DatePicker
+                  name="endDate"
+                  placeholderText="End Date(MM/YYYY)"
+                  selected={edu.endDate ? new Date(edu.endDate.replace(/-/g, '/')) : null}
+                  onChange={(date) => {
+                    const value = date ? date.toISOString().split('T')[0] : "";
+                    const mockEvent = {
+                      target: {
+                        name: "endDate",
+                        value: value
+                      }
+                    };
+                    handleEducationChange(index, mockEvent);
+                  }}
+                  showMonthYearPicker
+                  dateFormat="MM/yyyy"
+                  maxDate={new Date()}
+                  className="input input-half"
+                />
+              )}
+              <label className="present-checkbox">
+                <input
+                  type="checkbox"
+                  checked={edu.present}
+                  onChange={(e) => handleEducationPresentChange(index, e)}
+                />
+                Present
+              </label>
 
                 <div className="required">
                 <select
@@ -452,24 +505,58 @@ const ProfileCreationPage = () => {
             <div key={index} className="work-experience-item">
               <input name="title" placeholder="Job Title" value={exp.title} onChange={(e) => handleWorkChange(index, e)} className="input" required />
               <input name="company" placeholder="Company" value={exp.company} onChange={(e) => handleWorkChange(index, e)} className="input" required />
-        <DatePicker
-          selectsRange
-          startDate={exp.startDate ? new Date(exp.startDate) : null}
-          endDate={exp.endDate ? new Date(exp.endDate) : null}
-          onChange={(dates) => {
-            const [start, end] = dates;
-            const updatedStart = start ? start.toISOString().split("T")[0] : "";
-            const updatedEnd = end ? end.toISOString().split("T")[0] : "";
-
-            handleWorkChange(index, { target: { name: "startDate", value: updatedStart } });
-            handleWorkChange(index, { target: { name: "endDate", value: updatedEnd } });
-          }}
-          placeholderText="Start Date – End Date"
-          showMonthYearPicker
-          dateFormat="MM/yyyy"
-          className="input"
-        />
-
+               <DatePicker
+                  name="startDate"
+                  placeholderText="Start Date(MM/YYYY)"
+                  
+                  selected={exp.startDate ? new Date(exp.startDate.replace(/-/g, '/')) : null}
+                  
+                  onChange={(date) => {
+                    const value = date ? date.toISOString().split('T')[0] : "";
+                    const mockEvent = {
+                      target: {
+                        name: "startDate",
+                        value: value
+                      }
+                    };
+                    handleWorkChange(index, mockEvent);
+                  }}
+                  
+                  showMonthYearPicker
+                  dateFormat="MM/yyyy"
+                  maxDate={new Date()}
+                  
+                  className="input input-half"
+                />
+              {!exp.present && (
+                <DatePicker
+                  name="endDate"
+                  placeholderText="End Date(MM/YYYY)"
+                  selected={exp.endDate ? new Date(exp.endDate.replace(/-/g, '/')) : null}
+                  onChange={(date) => {
+                    const value = date ? date.toISOString().split('T')[0] : "";
+                    const mockEvent = {
+                      target: {
+                        name: "endDate",
+                        value: value
+                      }
+                    };
+                    handleWorkChange(index, mockEvent);
+                  }}
+                  showMonthYearPicker
+                  dateFormat="MM/yyyy"
+                  maxDate={new Date()}
+                  className="input input-half"
+                />
+              )}
+              <label className="present-checkbox">
+                <input
+                  type="checkbox"
+                  checked={exp.present}
+                  onChange={(e) => handleExperiencePresentChange(index, e)}
+                />
+                Present
+              </label>
               {Array.isArray(exp.description) ? exp.description : [].map((desc, descI) => (
               <div key={descI} className="list-item-container">
                 <input placeholder="Description" value={desc} onChange={(e) => handleDescChange(index, descI, e)} className="input input-flex"/>
@@ -497,23 +584,57 @@ const ProfileCreationPage = () => {
             ))}
             <button type="button" onClick={() => addTool(index)} className="add-button">Add Tool</button>
             <DatePicker
-            selectsRange
-            startDate={pro.startDate ? new Date(pro.startDate) : null}
-            endDate={pro.endDate ? new Date(pro.endDate) : null}
-            onChange={(dates) => {
-              const [start, end] = dates;
-              const updatedStart = start ? start.toISOString().split("T")[0] : "";
-              const updatedEnd = end ? end.toISOString().split("T")[0] : "";
-
-              handleProChange(index, { target: { name: "startDate", value: updatedStart } });
-              handleProChange(index, { target: { name: "endDate", value: updatedEnd } });
-            }}
-            placeholderText="Start Date – End Date"
-            showMonthYearPicker
-            dateFormat="MM/yyyy"
-            className="input"
-          />
-
+              name="startDate"
+              placeholderText="Start Date(MM/YYYY)"
+                  
+                  selected={pro.startDate ? new Date(pro.startDate.replace(/-/g, '/')) : null}
+                  
+                  onChange={(date) => {
+                    const value = date ? date.toISOString().split('T')[0] : "";
+                    const mockEvent = {
+                      target: {
+                        name: "startDate",
+                        value: value
+                      }
+                    };
+                    handleProChange(index, mockEvent);
+                  }}
+                  
+                  showMonthYearPicker
+                  dateFormat="MM/yyyy"
+                  maxDate={new Date()}
+                  
+                  className="input input-half"
+                />
+              {!pro.present && (
+                <DatePicker
+                  name="endDate"
+                  placeholderText="End Date(MM/YYYY)"
+                  selected={pro.endDate ? new Date(pro.endDate.replace(/-/g, '/')) : null}
+                  onChange={(date) => {
+                    const value = date ? date.toISOString().split('T')[0] : "";
+                    const mockEvent = {
+                      target: {
+                        name: "endDate",
+                        value: value
+                      }
+                    };
+                    handleProChange(index, mockEvent);
+                  }}
+                  showMonthYearPicker
+                  dateFormat="MM/yyyy"
+                  maxDate={new Date()}
+                  className="input input-half"
+                />
+              )}
+              <label className="present-checkbox">
+                <input
+                  type="checkbox"
+                  checked={pro.present}
+                  onChange={(e) => handleProjectPresentChange(index, e)}
+                />
+                Present
+              </label>
             {pro.descriptions.map((resp, respI) => (
               <div key={respI} className="list-item-container">
                 <input placeholder="Responsibilities" value={resp} onChange={(e) => handleRespChange(index, respI, e)} className="input input-flex"/>
