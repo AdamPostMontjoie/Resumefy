@@ -258,12 +258,23 @@ input[type=number] {
   border-radius: 0.30rem;
 }
 
-.back-to-gen {
+.back-button {
   position: absolute;
-  top: 0;
-  left: 0;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.8);
-  z-index: 1000;
-  margin-top: 20;
+  top: 20px;
+  right: 20px;
+  text-decoration: none;
+  border-radius: 10px;
+  border-color: #3f4141;
+  border: 2px solid;
+  color: #372414;
+  font-weight: 500;
+  font-size: 1.2rem;
+  transition: color 0.2s;
+  cursor: pointer;
 }
+.back-button:hover {
+  background-color: #cecac8;
+
+}
+
+

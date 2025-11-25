@@ -314,8 +314,10 @@ const ProfileCreationPage = () => {
   return (
     <div>
     <button onClick={() => { navigate('/')}} className="back-to-main">Ex</button>
+
     <div className="page-container">
       {/* <button className="back-to-gen">Back</button> */}
+      <button onClick={() => { navigate('/resumegeneration')}} className="back-button">Back</button>
       <form onSubmit={handleSubmit} className="form">
         <h1 className="title">Your Profile</h1>
         {/* Personal */}
@@ -368,49 +370,24 @@ const ProfileCreationPage = () => {
               <span className="asterisk">*</span>
               </div>
               <div className="input-grid" required>
-                <DatePicker
-                  name="startDate"
-                  placeholderText="Start Date (MM/YYYY)"
-                  selected={edu.startDate ? new Date(edu.startDate.replace(/-/g, '/')) : null}
-                  
-                  onChange={(date) => {
-                    const value = date ? date.toISOString().split('T')[0] : "";
-                    const mockEvent = {
-                      target: {
-                        name: "startDate",
-                        value: value
-                      }
-                    };
-                    handleEducationChange(index, mockEvent);
-                  }}
-                  
-                  showMonthYearPicker
-                  dateFormat="MM/yyyy"
-                  
-                  className="input input-half"
-                />
-                <DatePicker
-                  name="endDate"
-                  placeholderText="End Date(MM/YYYY)"
-                  
-                  selected={edu.endDate ? new Date(edu.endDate.replace(/-/g, '/')) : null}
-                  
-                  onChange={(date) => {
-                    const value = date ? date.toISOString().split('T')[0] : "";
-                    const mockEvent = {
-                      target: {
-                        name: "endDate",
-                        value: value
-                      }
-                    };
-                    handleEducationChange(index, mockEvent);
-                  }}
-                  
-                  showMonthYearPicker
-                  dateFormat="MM/yyyy"
-                  
-                  className="input  input-half"
-                />
+              <DatePicker
+                selectsRange
+                startDate={edu.startDate ? new Date(edu.startDate) : null}
+                endDate={edu.endDate ? new Date(edu.endDate) : null}
+                onChange={(dates) => {
+                  const [start, end] = dates;
+                  const updatedStart = start ? start.toISOString().split("T")[0] : "";
+                  const updatedEnd = end ? end.toISOString().split("T")[0] : "";
+
+                  handleEducationChange(index, { target: { name: "startDate", value: updatedStart } });
+                  handleEducationChange(index, { target: { name: "endDate", value: updatedEnd } });
+                }}
+                placeholderText="Start Date – End Date"
+                showMonthYearPicker
+                dateFormat="MM/yyyy"
+                className="input"
+              />
+
                 <div className="required">
                 <select
                   name="major"
@@ -475,51 +452,25 @@ const ProfileCreationPage = () => {
             <div key={index} className="work-experience-item">
               <input name="title" placeholder="Job Title" value={exp.title} onChange={(e) => handleWorkChange(index, e)} className="input" required />
               <input name="company" placeholder="Company" value={exp.company} onChange={(e) => handleWorkChange(index, e)} className="input" required />
-               <DatePicker
-                  name="startDate"
-                  placeholderText="Start Date(MM/YYYY)"
-                  
-                  selected={exp.startDate ? new Date(exp.startDate.replace(/-/g, '/')) : null}
-                  
-                  onChange={(date) => {
-                    const value = date ? date.toISOString().split('T')[0] : "";
-                    const mockEvent = {
-                      target: {
-                        name: "startDate",
-                        value: value
-                      }
-                    };
-                    handleWorkChange(index, mockEvent);
-                  }}
-                  
-                  showMonthYearPicker
-                  dateFormat="MM/yyyy"
-                  
-                  className="input input-half"
-                />
-                <DatePicker
-                  name="endDate"
-                  placeholderText="End Date(MM/YYYY)"
-                  
-                  selected={exp.endDate ? new Date(exp.endDate.replace(/-/g, '/')) : null}
-                  
-                  onChange={(date) => {
-                    const value = date ? date.toISOString().split('T')[0] : "";
-                    const mockEvent = {
-                      target: {
-                        name: "endDate",
-                        value: value
-                      }
-                    };
-                    handleWorkChange(index, mockEvent);
-                  }}
-                  
-                  showMonthYearPicker
-                  dateFormat="MM/yyyy"
-                  
-                  className="input  input-half"
-                />
-              {exp.description.map((desc, descI) => (
+        <DatePicker
+          selectsRange
+          startDate={exp.startDate ? new Date(exp.startDate) : null}
+          endDate={exp.endDate ? new Date(exp.endDate) : null}
+          onChange={(dates) => {
+            const [start, end] = dates;
+            const updatedStart = start ? start.toISOString().split("T")[0] : "";
+            const updatedEnd = end ? end.toISOString().split("T")[0] : "";
+
+            handleWorkChange(index, { target: { name: "startDate", value: updatedStart } });
+            handleWorkChange(index, { target: { name: "endDate", value: updatedEnd } });
+          }}
+          placeholderText="Start Date – End Date"
+          showMonthYearPicker
+          dateFormat="MM/yyyy"
+          className="input"
+        />
+
+              {Array.isArray(exp.description) ? exp.description : [].map((desc, descI) => (
               <div key={descI} className="list-item-container">
                 <input placeholder="Description" value={desc} onChange={(e) => handleDescChange(index, descI, e)} className="input input-flex"/>
                 <button type="button" onClick={() => removeDescription(index, descI)} className="remove-button">Remove</button>
@@ -546,49 +497,23 @@ const ProfileCreationPage = () => {
             ))}
             <button type="button" onClick={() => addTool(index)} className="add-button">Add Tool</button>
             <DatePicker
-              name="startDate"
-              placeholderText="Start Date(MM/YYYY)"
-                  
-                  selected={pro.startDate ? new Date(pro.startDate.replace(/-/g, '/')) : null}
-                  
-                  onChange={(date) => {
-                    const value = date ? date.toISOString().split('T')[0] : "";
-                    const mockEvent = {
-                      target: {
-                        name: "startDate",
-                        value: value
-                      }
-                    };
-                    handleProChange(index, mockEvent);
-                  }}
-                  
-                  showMonthYearPicker
-                  dateFormat="MM/yyyy"
-                  
-                  className="input input-half"
-                />
-                <DatePicker
-                  name="endDate"
-                  placeholderText="End Date(MM/YYYY)"
-                  
-                  selected={pro.endDate ? new Date(pro.endDate.replace(/-/g, '/')) : null}
-                  
-                  onChange={(date) => {
-                    const value = date ? date.toISOString().split('T')[0] : "";
-                    const mockEvent = {
-                      target: {
-                        name: "endDate",
-                        value: value
-                      }
-                    };
-                    handleProChange(index, mockEvent);
-                  }}
-                  
-                  showMonthYearPicker
-                  dateFormat="MM/yyyy"
-                  
-                  className="input  input-half"
-                />
+            selectsRange
+            startDate={pro.startDate ? new Date(pro.startDate) : null}
+            endDate={pro.endDate ? new Date(pro.endDate) : null}
+            onChange={(dates) => {
+              const [start, end] = dates;
+              const updatedStart = start ? start.toISOString().split("T")[0] : "";
+              const updatedEnd = end ? end.toISOString().split("T")[0] : "";
+
+              handleProChange(index, { target: { name: "startDate", value: updatedStart } });
+              handleProChange(index, { target: { name: "endDate", value: updatedEnd } });
+            }}
+            placeholderText="Start Date – End Date"
+            showMonthYearPicker
+            dateFormat="MM/yyyy"
+            className="input"
+          />
+
             {pro.descriptions.map((resp, respI) => (
               <div key={respI} className="list-item-container">
                 <input placeholder="Responsibilities" value={resp} onChange={(e) => handleRespChange(index, respI, e)} className="input input-flex"/>
