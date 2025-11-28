@@ -1,22 +1,27 @@
-
 FROM python:3.9-slim
 
-# Set working directory
+# 1. Force logs to appear (Debugging)
+ENV PYTHONUNBUFFERED=1
+
+# 2. CRITICAL: Point AI Cache to /tmp (The only writable folder on Cloud Run)
+ENV SENTENCE_TRANSFORMERS_HOME=/tmp
+ENV TORCH_HOME=/tmp
+ENV HF_HOME=/tmp
+
 WORKDIR /app
 
-# 1. Install CPU-only PyTorch (Keeps image size small)
+# 3. Install dependencies
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
-
-# 2. Install AI libs, FastAPI, AND Uvicorn (The web server)
 RUN pip install --no-cache-dir sentence-transformers numpy fastapi uvicorn pydantic
 
-# Copy your code into the container
+# 4. Copy the preload script and run it NOW (during the build)
+# This bakes the model into the image so the app starts instantly
+COPY preload.py .
+RUN python preload.py
+
+# 5. Copy the main app
 COPY main.py .
 
-# 3. Expose the port (Optional but good practice)
-EXPOSE 8000
-
-# 4. START COMMAND (Crucial Change)
-# "main:app" means "look in main.py for the variable named app"
-# --host 0.0.0.0 is required for Docker to accept outside connections
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# 6. Use Google Standard Port 8080
+EXPOSE 8080
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
