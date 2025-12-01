@@ -9,6 +9,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import institutions from './us_institutions.json'
 import degrees from './degrees.json'
 import majors from './majors.json'
+import logo from "../../assets/logo.png";
+
 
 const CollapsibleSection = ({ title, children, expandAllTrigger }) => {
   const [open, setOpen] = useState(true);
@@ -20,6 +22,7 @@ const CollapsibleSection = ({ title, children, expandAllTrigger }) => {
   
 
   return (
+    
     <section className="collapsible-section">
       <button
         type="button"
@@ -244,10 +247,31 @@ const addEducation = () => {
   };
 
   return (
-    <div>
-    <button onClick={() => { navigate('/')}} className="back-to-main">Ex</button>
+    <div style={{ backgroundColor: "#F7EBDF", minHeight: "100vh" }}>
+  
+      {/* Logo only */}
+      <img
+        src={logo}
+        alt="Resumefy Logo"
+        onClick={() => navigate("/")}
+        style={{
+          position: "absolute",
+          top: "25px",
+          left: "40px",
+          height: "110px",
+          cursor: "pointer",
+          zIndex: 999,
+        }}
+      />
     <div className="page-container">
       <form onSubmit={handleSubmit} className="form">
+      <button 
+        onClick={() => navigate("/resumegeneration")}
+        className="back-button-inline"
+      >
+      ← Back
+      </button>
+
         <h1 className="title">Your Profile</h1>
         {/* Personal */}
         <CollapsibleSection title="Personal Info" expandAllTrigger={expandAllTrigger}>

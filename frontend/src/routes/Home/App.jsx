@@ -41,8 +41,9 @@ function App() {
           width: "90%",
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: "flex-start",
           maxWidth: "1200px",
+          padding: "0 40px", 
         }}
       >
         <img
@@ -52,7 +53,10 @@ function App() {
           height: "110px",
           objectFit: "contain",
           cursor: "pointer",
-          marginLeft: "-80px",
+          flexShrink: 0,              
+          maxWidth: "100%",
+          marginTop: "5px"
+          //marginLeft: "-60px",
          }}
          onClick={() => scrollToSection(homeRef)} // makes logo scroll back to top
         />
