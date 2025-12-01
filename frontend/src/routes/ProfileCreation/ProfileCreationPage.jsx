@@ -260,7 +260,7 @@ const ProfileCreationPage = () => {
   };
   const removeDescription = (workI, descI) => {
     const updated = [...workExperience];
-    updated[workI].description = updated[descI].tools.filter((_, i) => i !== descI);
+    updated[workI].description = updated[workI].description.filter((_, i) => i !== descI);
     setWorkExperience(updated);
   };
   const addPro = () => {
@@ -557,7 +557,7 @@ const ProfileCreationPage = () => {
                 />
                 Present
               </label>
-              {Array.isArray(exp.description) ? exp.description : [].map((desc, descI) => (
+              {exp.description.map((desc, descI) => (
               <div key={descI} className="list-item-container">
                 <input placeholder="Description" value={desc} onChange={(e) => handleDescChange(index, descI, e)} className="input input-flex"/>
                 <button type="button" onClick={() => removeDescription(index, descI)} className="remove-button">Remove</button>
