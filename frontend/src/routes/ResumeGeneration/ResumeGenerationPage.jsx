@@ -185,17 +185,19 @@ function ResumeGenerationPage() {
               border: "1px solid #000000ff",
               backgroundColor: "#f9fafb",
               fontWeight: "600",
+              width: "46.5%"
             }}
           >
-            Job Responsibilities
+            Job Title
           </div>
           <textarea
             value={jobResp}
             onChange={(e) => setJobResp(e.target.value)}
-            placeholder="Paste job responsibilities..."
+            maxLength="40"
+            placeholder="Paste job title..."
             style={{
-              width: "100%",
-              minHeight: "250px",
+              width: "50%",
+              minHeight: "30px",
               padding: "24px",
               backgroundColor: "white",
               border: "1px solid #000000ff",
