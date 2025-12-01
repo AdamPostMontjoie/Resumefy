@@ -80,10 +80,13 @@ const ProfileCreationPage = () => {
   });
 
   const [education, setEducation] = useState([
-    { institution: "", dates: "", major: "", minor: "", degree: "", gpa: "" },
+    { institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", gpa: "" },
   ]);
   const [workExperience, setWorkExperience] = useState([
-    { title: "", company: "", startDate: "", endDate:"", description: "", location: "" },
+    { title: "", company: "", startDate: "", endDate:"", description: [""], location: "" },
+  ]);
+  const [projects, setProjects] = useState([
+    { title: "", tools: [""], startDate: "", endDate:"", descriptions: [""] },
   ]);
   const [skills, setSkills] = useState([""]);
 
@@ -114,7 +117,7 @@ const ProfileCreationPage = () => {
           const result = await axios.get(`http://localhost:5005/user/${currentUser.uid}`)
           console.log(result)
           //update profile
-         const profile = result.data.profile || {};
+          const profile = result.data.profile || {};
           const email = result.data.email || "";
 
           setSummary(profile.Summary || "");
@@ -125,13 +128,18 @@ const ProfileCreationPage = () => {
           setEducation(
             profile.education && profile.education.length > 0 
               ? profile.education 
-              : [{ institution: "", dates: "", major: "", minor: "", degree: "", gpa: "" }]
+              : [{ institution: "", startDate: "", endDate:"", present: false, major: "", minor: "", degree: "", gpa: "" }]
           );
           setWorkExperience(
             profile.work && profile.work.length > 0 
               ? profile.work 
-              : [{ title: "", company: "", startDate:"", endDate:"",  description: "", location: "" }]
+              : [{ title: "", company: "", startDate: "", endDate:"", present: false, description: [""], location: "" }]
           );   
+          setProjects(
+            profile.projects && profile.projects.length > 0
+              ? profile.projects 
+              : [{ title: "", tools: [""], startDate: "", endDate:"", present: false, descriptions: [""] }]
+          );
           setSkills(
             profile.skills && profile.skills.length > 0 
               ? profile.skills 
@@ -179,6 +187,29 @@ const ProfileCreationPage = () => {
     updated[i][name] = value;
     setWorkExperience(updated);
   };
+  const handleDescChange = (expI, descI, e) => {
+    const updated = [...workExperience];
+    updated[expI].description[descI] = e.target.value;
+    setWorkExperience(updated);
+  };
+  const handleProChange = (i, e) => {
+    const { name, value } = e.target;
+    const updated = [...projects];
+    updated[i][name] = value;
+    setProjects(updated);
+  };
+  const handleToolChange = (proI, toolI, e) => {
+    const updated = [...projects];
+    updated[proI].tools[toolI] = e.target.value;
+    setProjects(updated);
+  }
+
+  const handleRespChange = (proI, respI, e) => {
+    const updated = [...projects];
+    updated[proI].descriptions[respI] = e.target.value;
+    setProjects(updated);
+  }
+
   const handleSkillChange = (i, e) => {
     const updated = [...skills];
     updated[i] = e.target.value;
@@ -194,24 +225,79 @@ const ProfileCreationPage = () => {
     updated[i] = e.target.value;
     setWebsites(updated);
   };
+  const handleEducationPresentChange = (i, e) => {
+    const updated = [...education];
+    updated[i].present = e.target.checked;
+    updated[i].endDate = e.target.checked ? "Present" : "";
+    setEducation(updated);
+  };
+    const handleExperiencePresentChange = (i, e) => {
+    const updated = [...workExperience];
+    updated[i].present = e.target.checked;
+    updated[i].endDate = e.target.checked ? "Present" : "";
+    setEducation(updated);
+  };
+    const handleProjectPresentChange = (i, e) => {
+    const updated = [...projects];
+    updated[i].present = e.target.checked;
+    updated[i].endDate = e.target.checked ? "Present" : "";
+    setEducation(updated);
+  };
+
 
   // Add/remove
-const addEducation = () => {
+  const addEducation = () => {
     const today = new Date().toISOString().split('T')[0];
     setEducation([...education, { institution: "", dates: today, major: "", minor: "", degree: "", gpa: "" }]);
   };
   const removeEducation = (i) => setEducation(education.filter((_, x) => x !== i));
- const addWork = () => {
+  const addWork = () => {
     const today = new Date().toISOString().split('T')[0];
-    setWorkExperience([...workExperience, { title: "", company: "", startDate:"", endDate: today, description: "", location: "" }]);
+    setWorkExperience([...workExperience, { title: "", company: "", startDate: "", endDate:"", description: [""], location: "" }]);
   };
   const removeWork = (i) => setWorkExperience(workExperience.filter((_, x) => x !== i));
+  const addDescription = (workI) => {
+    const updated = [...workExperience];
+    updated[workI].description.push("");
+    setWorkExperience(updated);
+  };
+  const removeDescription = (workI, descI) => {
+    const updated = [...workExperience];
+    updated[workI].description = updated[descI].tools.filter((_, i) => i !== descI);
+    setWorkExperience(updated);
+  };
+  const addPro = () => {
+    const today = new Date().toISOString().split('T')[0];
+    setProjects([...projects, { title: "", tools: [""], startDate: "", endDate:"", descriptions: [""] }]);
+  };
+  const removePro = (i) => setProjects(projects.filter((_, x) => x !== i));
+  const addTool = (proI) => {
+    const updated = [...projects];
+    updated[proI].tools.push("");
+    setProjects(updated);
+  };
+  const removeTool = (proI, toolI) => {
+    const updated = [...projects];
+    updated[proI].tools = updated[proI].tools.filter((_, i) => i !== toolI);
+    setProjects(updated);
+  };
+  const addResponsibilities = (proI) => {
+    const updated = [...projects];
+    updated[proI].descriptions.push("");
+    setProjects(updated);
+  };
+  const removeResponsibilities = (proI, respI) => {
+    const updated = [...projects];
+    updated[proI].descriptions = updated[proI].descriptions.filter((_, i) => i !== respI);
+  setProjects(updated);
+  };
   const addSkill = () => setSkills([...skills, ""]);
   const removeSkill = (i) => setSkills(skills.filter((_, x) => x !== i));
   const addCert = () => setCertifications([...certifications, ""]);
   const removeCert = (i) => setCertifications(certifications.filter((_, x) => x !== i));
   const addWebsite = () => setWebsites([...websites, ""]);
   const removeWebsite = (i) => setWebsites(websites.filter((_, x) => x !== i));
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -229,6 +315,7 @@ const addEducation = () => {
             },
             Summary:summary,
             work:workExperience,
+            project:projects,
             certifications:certifications,
             education:education,
             skills:skills,
@@ -264,6 +351,8 @@ const addEducation = () => {
         }}
       />
     <div className="page-container">
+      {/* <button className="back-to-gen">Back</button> */}
+      <button onClick={() => { navigate('/resumegeneration')}} className="back-button">Back</button>
       <form onSubmit={handleSubmit} className="form">
       <button 
         onClick={() => navigate("/resumegeneration")}
@@ -276,17 +365,29 @@ const addEducation = () => {
         {/* Personal */}
         <CollapsibleSection title="Personal Info" expandAllTrigger={expandAllTrigger}>
           <div className="input-grid">
-            <input name="firstname" placeholder="First Name" value={personalInfo.firstname} onChange={handlePersonalChange} className="input input-half" required />
-            <input  name="lastname" placeholder="Last Name" value={personalInfo.lastname} onChange={handlePersonalChange} className="input input-half" required />
-            <input disabled name="email" type="email" placeholder="Email" value={personalInfo.email} onChange={handlePersonalChange} className="input input-half" required />
-            <input maxLength={10} type="number" name="phone" placeholder="Phone (numbers only)" value={personalInfo.phone} onChange={handlePersonalChange} className="input input-half" />
+            <div className="required">
+              <input name="firstname" placeholder="First Name" value={personalInfo.firstname} onChange={handlePersonalChange} className="input input-half" required />
+              <span className="asterisk">*</span>
+            </div>
+            <div className="required">
+              <input  name="lastname" placeholder="Last Name" value={personalInfo.lastname} onChange={handlePersonalChange} className="input input-half" required />
+              <span className="asterisk">*</span>
+            </div>
+            <div className="required">
+              <input disabled name="email" type="email" placeholder="Email" value={personalInfo.email} onChange={handlePersonalChange} className="input input-half" required />
+              <span className="asterisk">*</span>
+            </div>
+            <div className="required">
+              <input maxLength={10} type="number" name="phone" placeholder="Phone (numbers only)" value={personalInfo.phone} onChange={handlePersonalChange} className="input input-half" />
+            </div>
           </div>
         </CollapsibleSection>
         {/* Education */}
         <CollapsibleSection title="Education" expandAllTrigger={expandAllTrigger}>
           {education.map((edu, index) => (
             <div key={index} className="work-experience-item">
-              <Select
+              <div className="required">
+              <Select className="dropdown"
                 name="institution"
                 placeholder="Search for an institution..."
                 options={collegeList} 
@@ -308,17 +409,19 @@ const addEducation = () => {
                 
                 classNamePrefix="react-select"
               />
+              <span className="asterisk">*</span>
+              </div>
               <div className="input-grid" required>
                 <DatePicker
-                  name="dates"
-                  placeholderText="Dates (MM/YYYY)"
-                  selected={edu.dates ? new Date(edu.dates.replace(/-/g, '/')) : null}
+                  name="startDate"
+                  placeholderText="Start Date (MM/YYYY)"
+                  selected={edu.startDate ? new Date(edu.startDate.replace(/-/g, '/')) : null}
                   
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
                     const mockEvent = {
                       target: {
-                        name: "dates",
+                        name: "startDate",
                         value: value
                       }
                     };
@@ -327,9 +430,41 @@ const addEducation = () => {
                   
                   showMonthYearPicker
                   dateFormat="MM/yyyy"
+                  maxDate={new Date()}
                   
                   className="input input-half"
                 />
+                {!edu.present && (
+                <DatePicker
+                  name="endDate"
+                  placeholderText="End Date(MM/YYYY)"
+                  selected={edu.endDate ? new Date(edu.endDate.replace(/-/g, '/')) : null}
+                  onChange={(date) => {
+                    const value = date ? date.toISOString().split('T')[0] : "";
+                    const mockEvent = {
+                      target: {
+                        name: "endDate",
+                        value: value
+                      }
+                    };
+                    handleEducationChange(index, mockEvent);
+                  }}
+                  showMonthYearPicker
+                  dateFormat="MM/yyyy"
+                  maxDate={new Date()}
+                  className="input input-half"
+                />
+              )}
+              <label className="present-checkbox">
+                <input
+                  type="checkbox"
+                  checked={edu.present}
+                  onChange={(e) => handleEducationPresentChange(index, e)}
+                />
+                Present
+              </label>
+
+                <div className="required">
                 <select
                   name="major"
                   value={edu.major}
@@ -344,6 +479,9 @@ const addEducation = () => {
                     </option>
                   ))}
                 </select>
+                <span className="asterisk">*</span>
+                </div>
+                <div className="required">
                 <select
                   name="minor"
                   value={edu.minor}
@@ -358,6 +496,9 @@ const addEducation = () => {
                     </option>
                   ))}
                 </select>
+                <span className="asterisk">*</span>
+                </div>
+                <div className="required">
                 <select
                   name="degree"
                   value={edu.degree}
@@ -372,8 +513,10 @@ const addEducation = () => {
                     </option>
                   ))}
                 </select>
+                <span className="asterisk">*</span>
+                </div>
               </div>
-              <input type="number" name="gpa" placeholder="GPA" value={edu.gpa} onChange={(e) => handleEducationChange(index, e)} className="input input-half" />
+              {/* <input type="number" name="gpa" placeholder="GPA" value={edu.gpa} onChange={(e) => handleEducationChange(index, e)} className="input input-half" /> */}
               <button type="button" onClick={() => removeEducation(index)} className="remove-button">Remove</button>
             </div>
           ))}
@@ -404,15 +547,15 @@ const addEducation = () => {
                   
                   showMonthYearPicker
                   dateFormat="MM/yyyy"
+                  maxDate={new Date()}
                   
                   className="input input-half"
                 />
+              {!exp.present && (
                 <DatePicker
                   name="endDate"
                   placeholderText="End Date(MM/YYYY)"
-                  
-                  selected={exp.endtDate ? new Date(exp.endDate.replace(/-/g, '/')) : null}
-                  
+                  selected={exp.endDate ? new Date(exp.endDate.replace(/-/g, '/')) : null}
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
                     const mockEvent = {
@@ -423,18 +566,109 @@ const addEducation = () => {
                     };
                     handleWorkChange(index, mockEvent);
                   }}
-                  
                   showMonthYearPicker
                   dateFormat="MM/yyyy"
-                  
-                  className="input  input-half"
+                  maxDate={new Date()}
+                  className="input input-half"
                 />
-              <textarea name="description" placeholder="Write a short description of the work experience..." value={exp.description} onChange={(e) => handleWorkChange(index, e)} className="textarea" required/>
+              )}
+              <label className="present-checkbox">
+                <input
+                  type="checkbox"
+                  checked={exp.present}
+                  onChange={(e) => handleExperiencePresentChange(index, e)}
+                />
+                Present
+              </label>
+              {Array.isArray(exp.description) ? exp.description : [].map((desc, descI) => (
+              <div key={descI} className="list-item-container">
+                <input placeholder="Description" value={desc} onChange={(e) => handleDescChange(index, descI, e)} className="input input-flex"/>
+                <button type="button" onClick={() => removeDescription(index, descI)} className="remove-button">Remove</button>
+              </div>
+            ))}
+            <button type="button" onClick={() => addDescription(index)} className="add-button">Add Descrptions</button>
               <input name="location" placeholder="Location" value={exp.location} onChange={(e) => handleWorkChange(index, e)} className="input" />
               <button type="button" onClick={() => removeWork(index)} className="remove-button">Remove</button>
             </div>
           ))}
           <button type="button" onClick={addWork} className="add-button">Add Work Experience</button>
+        </CollapsibleSection>
+        {/* Projects */}
+        {/* !!! */}
+        <CollapsibleSection title="Projects" expandAllTrigger={expandAllTrigger}>
+          {projects.map((pro, index) => (
+            <div key={index} className="work-experience-item">
+            <input name="title" placeholder="Project Title" value={pro.title} onChange={(e) => handleProChange(index, e)} className="input" required />
+            {pro.tools.map((tool, toolI) => (
+              <div key={toolI} className="list-item-container">
+                <input placeholder="Tools" value={tool} onChange={(e) => handleToolChange(index, toolI, e)} className="input input-flex"/>
+                <button type="button" onClick={() => removeTool(index, toolI)} className="remove-button">Remove</button>
+              </div>
+            ))}
+            <button type="button" onClick={() => addTool(index)} className="add-button">Add Tool</button>
+            <DatePicker
+              name="startDate"
+              placeholderText="Start Date(MM/YYYY)"
+                  
+                  selected={pro.startDate ? new Date(pro.startDate.replace(/-/g, '/')) : null}
+                  
+                  onChange={(date) => {
+                    const value = date ? date.toISOString().split('T')[0] : "";
+                    const mockEvent = {
+                      target: {
+                        name: "startDate",
+                        value: value
+                      }
+                    };
+                    handleProChange(index, mockEvent);
+                  }}
+                  
+                  showMonthYearPicker
+                  dateFormat="MM/yyyy"
+                  maxDate={new Date()}
+                  
+                  className="input input-half"
+                />
+              {!pro.present && (
+                <DatePicker
+                  name="endDate"
+                  placeholderText="End Date(MM/YYYY)"
+                  selected={pro.endDate ? new Date(pro.endDate.replace(/-/g, '/')) : null}
+                  onChange={(date) => {
+                    const value = date ? date.toISOString().split('T')[0] : "";
+                    const mockEvent = {
+                      target: {
+                        name: "endDate",
+                        value: value
+                      }
+                    };
+                    handleProChange(index, mockEvent);
+                  }}
+                  showMonthYearPicker
+                  dateFormat="MM/yyyy"
+                  maxDate={new Date()}
+                  className="input input-half"
+                />
+              )}
+              <label className="present-checkbox">
+                <input
+                  type="checkbox"
+                  checked={pro.present}
+                  onChange={(e) => handleProjectPresentChange(index, e)}
+                />
+                Present
+              </label>
+            {pro.descriptions.map((resp, respI) => (
+              <div key={respI} className="list-item-container">
+                <input placeholder="Responsibilities" value={resp} onChange={(e) => handleRespChange(index, respI, e)} className="input input-flex"/>
+                <button type="button" onClick={() => removeResponsibilities(index, respI)} className="remove-button">Remove</button>
+              </div>
+            ))}
+            <button type="button" onClick={() => addResponsibilities(index)} className="add-button">Add Responsibilities</button>
+            <button type="button" onClick={() => removePro(index)} className="remove-button">Remove</button>
+            </div>
+          ))}
+          <button type="button" onClick={addPro} className="add-button">Add Project</button>
         </CollapsibleSection>
           {/* Skills */}
         <CollapsibleSection title="Skills" expandAllTrigger={expandAllTrigger}>
@@ -465,15 +699,6 @@ const addEducation = () => {
             </div>
           ))}
           <button type="button" onClick={addWebsite} className="add-button">Add Website</button>
-        </CollapsibleSection>
-
-        <CollapsibleSection title="Summary" expandAllTrigger={expandAllTrigger}>
-          <textarea
-            placeholder="Write a short professional summary or objective..."
-            value={summary}
-            onChange={(e) => setSummary(e.target.value)}
-            className="textarea"
-          />
         </CollapsibleSection>
 
         <button type="submit" className="submit-button">Submit Profile</button>

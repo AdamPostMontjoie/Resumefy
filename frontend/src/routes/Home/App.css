@@ -28,3 +28,10 @@
 .navLink:hover {
   background-color: #cecac8;
 }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #f8fafc; /* or your background */
+  height: 100%;
+}

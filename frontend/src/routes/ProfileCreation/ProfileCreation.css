@@ -131,6 +131,20 @@ input[type=number] {
   flex: 1;
 }
 
+.required {
+  position: relative;
+}
+
+.asterisk {
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  color: red;
+  font-size: 18px;
+  font-weight: bold;
+  pointer-events: none;
+}
+
 /* --- List Items (Skills, Certs, etc.) --- */
 .list-item-container {
   margin-bottom: 1rem;
