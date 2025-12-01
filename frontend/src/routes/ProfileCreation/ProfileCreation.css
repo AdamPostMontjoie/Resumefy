@@ -7,6 +7,7 @@
   background: linear-gradient(135deg, #F7EBDF 0%, #EEEEF0 100%);
   color: #111827;
   padding: 2rem;
+  font-family: 'Inter', sans-serif; 
 }
 
 input[type=number]::-webkit-outer-spin-button,
@@ -251,30 +252,57 @@ input[type=number] {
   font-size: 1rem;
 }
 
-.dropdown {
-  font-family: 'Arial', Helvetica, sans-serif;
-  font-size: 1rem;
-  border: 1px solid rgb(54, 53, 53);
-  border-radius: 0.30rem;
-}
-
-.back-button {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  text-decoration: none;
+.back-button-inline {
+  align-self: flex-start;
+  background: white;
+  border: 2px solid #372414;
+  padding: 6px 14px;
   border-radius: 10px;
-  border-color: #3f4141;
-  border: 2px solid;
-  color: #372414;
-  font-weight: 500;
-  font-size: 1.2rem;
-  transition: color 0.2s;
   cursor: pointer;
+  font-weight: 600;
+  color: #372414;
+  margin-bottom: -5px; 
+  margin-top: -10px; 
 }
-.back-button:hover {
-  background-color: #cecac8;
 
+.back-button-inline:hover {
+  background: #f3ebe4;
 }
 
 
+/* Selected value text */
+.react-select__single-value {
+  color: #000 !important; /* Change this to any color */
+}
+
+/* Placeholder text */
+.react-select__placeholder {
+  color: #000000 !important; /* Change to any color */
+}
+
+/* When typing inside select */
+.react-select__input input {
+  color: #000000 !important; /* Change to any color */
+}
+
+/* Dropdown menu text */
+.react-select__option {
+  color: #000000 !important; /* Change to any color */
+}
+
+/* Focused option */
+.react-select__option--is-focused {
+  background-color: #f3f4f6 !important;
+  color: #000 !important; /* Change to any color */
+}
+
+/* Selected option */
+.react-select__option--is-selected {
+  background-color: #372414 !important; /* brown */
+  color: white !important; /* text color */
+}
+
+/* Control section (main box) text */
+.react-select__control {
+  color: #000 !important; /* Change to any color */
+}

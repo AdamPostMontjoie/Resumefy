@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import logo from "../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
 import { doCreateUserWithEmailAndPassword } from "../../auth/auth";
 import axios from "axios";
@@ -61,15 +62,46 @@ function RegisterPage() {
   }
 
   return (
-   <div>
-   <button onClick={() => { navigate('/')}} className="back-to-main">Ex</button>
+    <div>
+    {/* Logo added here */}
+    <img
+      src={logo}
+      alt="Resumefy Logo"
+      onClick={() => navigate("/")}
+      style={{
+        position: "absolute",
+        top: "20px",
+        left: "40px",
+        height: "110px",
+        cursor: "pointer",
+        zIndex: 999,
+      }}
+    />
    <div className="login-page-container">
       <div className="background-shape" />
       
       <div className="content-wrapper">
     
 
-        <div className="form-card">
+      <div className="form-card">
+        {/* Back Button inside card */}
+        <button
+          onClick={() => navigate('/login')}
+          className="back-button"
+          style={{
+            alignSelf: "flex-start",
+            marginBottom: "15px",
+            padding: "8px 15px",
+            borderRadius: "10px",
+            border: "2px solid #372414",
+            background: "white",
+            cursor: "pointer",
+            fontWeight: "600",
+            color: "#372414",
+          }}
+        >
+          ← Back
+        </button>
 
 
           {error && <div className="error-message">{error}</div>}
