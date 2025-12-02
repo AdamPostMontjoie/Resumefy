@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import logo from "../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
 import { doSignOut } from "../../auth/auth";
@@ -72,19 +73,51 @@ function ResumeGenerationPage() {
     }
   };
 
-  return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#F7EBDF" }}>
-      {/* Header */}
+return (
+  <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #F7EBDF 0%, #EEEEF0 100%)" }}>
+
+      {/* Logo in top-left */}
+      <img
+        src={logo}
+        alt="Resumefy Logo"
+        onClick={() => navigate("/")}
+        style={{
+          position: "absolute",
+          top: "20px",
+          left: "40px",
+          height: "90px",
+          cursor: "pointer",
+          zIndex: 999,
+        }}
+      />
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: "flex-end",
           padding: "25px 40px",
+          paddingLeft: "140px",
           borderBottom: "1px solid #000000ff",
+          position: "relative",
         }}
-      >
-        <button onClick={() => navigate("/")} className="quickOptions">Ex</button>
+>
+
+      <h1 style={{ margin: 0, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>Create Your Resume</h1>
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button onClick={editProfile} style={{ width: '100%', padding: '4px'}} className="quickOptions">Edit Profile</button>
+        <button onClick={handleLogout} style={{ width: '100%', padding: '4px'}} className="quickOptions">Logout</button>
+      </div>
+    </div>
+    {/* Saved vampire button and edit icon below*/}
+    {/*<div onClick={editProfile} style={{ width: '45px', height: '45px', borderRadius: '12px', background: 'linear-gradient(135deg, #372414, #372414)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', fontSize: '2.1rem' }}>🧛🏻‍♂️</div> 📝 */}
+
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', padding: '40px', maxWidth: '1400px', margin: '0 auto', width: '100%'}}>
+      
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+        <h2 style={{ fontSize: '2rem', fontWeight: 700, margin: 0 }}> Instructions </h2>
+        <p style={{ color: '#6b7280', margin: 0 }}> Copy and Paste the job description and job responsibilities below </p>
+        <p style={{ color: '#6b7280', margin: 0 }}> Click "Generate Resume" when done </p>
+      </div>
 
         <h1 style={{ margin: 0, position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
           Create Your Resume
