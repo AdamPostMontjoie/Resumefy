@@ -241,7 +241,6 @@ const ProfileCreationPage = () => {
     setEducation(updated);
   };
 
-
   // Add/remove
   const addEducation = () => {
     const today = new Date().toISOString().split('T')[0];
@@ -260,7 +259,7 @@ const ProfileCreationPage = () => {
   };
   const removeDescription = (workI, descI) => {
     const updated = [...workExperience];
-    updated[workI].description = updated[descI].tools.filter((_, i) => i !== descI);
+    updated[workI].description = updated[workI].description.filter((_, i) => i !== descI);
     setWorkExperience(updated);
   };
   const addPro = () => {
@@ -464,7 +463,7 @@ const ProfileCreationPage = () => {
                   value={edu.minor}
                   onChange={(e) => handleEducationChange(index, e)}
                   className="input input-half"
-                  required
+                  
                 >
                   <option value="">Select a Minor</option>
                   {majorsList.map((minor)=>(
@@ -473,7 +472,7 @@ const ProfileCreationPage = () => {
                     </option>
                   ))}
                 </select>
-                <span className="asterisk">*</span>
+                
                 </div>
                 <div className="required">
                 <select
@@ -557,7 +556,7 @@ const ProfileCreationPage = () => {
                 />
                 Present
               </label>
-              {Array.isArray(exp.description) ? exp.description : [].map((desc, descI) => (
+              {exp.description.map((desc, descI) => (
               <div key={descI} className="list-item-container">
                 <input placeholder="Description" value={desc} onChange={(e) => handleDescChange(index, descI, e)} className="input input-flex"/>
                 <button type="button" onClick={() => removeDescription(index, descI)} className="remove-button">Remove</button>
@@ -578,7 +577,7 @@ const ProfileCreationPage = () => {
             <input name="title" placeholder="Project Title" value={pro.title} onChange={(e) => handleProChange(index, e)} className="input" required />
             {pro.tools.map((tool, toolI) => (
               <div key={toolI} className="list-item-container">
-                <input placeholder="Tools" value={tool} onChange={(e) => handleToolChange(index, toolI, e)} className="input input-flex"/>
+                <input placeholder="Tools" value={tool} onChange={(e) => handleToolChange(index, toolI, e)} className="input input-flex" require/>
                 <button type="button" onClick={() => removeTool(index, toolI)} className="remove-button">Remove</button>
               </div>
             ))}
@@ -637,7 +636,7 @@ const ProfileCreationPage = () => {
               </label>
             {pro.descriptions.map((resp, respI) => (
               <div key={respI} className="list-item-container">
-                <input placeholder="Responsibilities" value={resp} onChange={(e) => handleRespChange(index, respI, e)} className="input input-flex"/>
+                <input placeholder="Project Description" value={resp} onChange={(e) => handleRespChange(index, respI, e)} className="input input-flex" required/>
                 <button type="button" onClick={() => removeResponsibilities(index, respI)} className="remove-button">Remove</button>
               </div>
             ))}
@@ -651,7 +650,7 @@ const ProfileCreationPage = () => {
         <CollapsibleSection title="Skills" expandAllTrigger={expandAllTrigger}>
           {skills.map((skill, i) => (
             <div key={i} className="list-item-container">
-              <input placeholder="Skill" value={skill} onChange={(e) => handleSkillChange(i, e)} className="input input-flex" />
+              <input placeholder="Skill" value={skill} onChange={(e) => handleSkillChange(i, e)} className="input input-flex" required/>
               <button type="button" onClick={() => removeSkill(i)} className="remove-button">Remove</button>
             </div>
           ))}
@@ -661,21 +660,24 @@ const ProfileCreationPage = () => {
         <CollapsibleSection title="Certifications" expandAllTrigger={expandAllTrigger}>
           {certifications.map((cert, i) => (
             <div key={i} className="list-item-container">
-              <input placeholder="Certification name" value={cert} onChange={(e) => handleCertChange(i, e)} className="input input-flex" />
+              <input placeholder="Certification name" value={cert} onChange={(e) => handleCertChange(i, e)} className="input input-flex" required/>
               <button type="button" onClick={() => removeCert(i)} className="remove-button">Remove</button>
             </div>
           ))}
           <button type="button" onClick={addCert} className="add-button">Add Certification</button>
+          
+          
         </CollapsibleSection>
 
         <CollapsibleSection title="Websites / Links" expandAllTrigger={expandAllTrigger}>
           {websites.map((url, i) => (
             <div key={i} className="list-item-container">
-              <input placeholder="Website or Portfolio URL" value={url} onChange={(e) => handleWebsiteChange(i, e)} className="input input-flex" />
+              <input placeholder="Website or Portfolio URL" value={url} onChange={(e) => handleWebsiteChange(i, e)} className="input input-flex" required/>
               <button type="button" onClick={() => removeWebsite(i)} className="remove-button">Remove</button>
             </div>
           ))}
           <button type="button" onClick={addWebsite} className="add-button">Add Website</button>
+          
         </CollapsibleSection>
 
         <button type="submit" className="submit-button">Submit Profile</button>
