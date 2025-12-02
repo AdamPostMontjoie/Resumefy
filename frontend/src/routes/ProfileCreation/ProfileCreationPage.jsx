@@ -232,13 +232,13 @@ const ProfileCreationPage = () => {
     const updated = [...workExperience];
     updated[i].present = e.target.checked;
     updated[i].endDate = e.target.checked ? "Present" : "";
-    setEducation(updated);
+    setWorkExperience(updated);
   };
     const handleProjectPresentChange = (i, e) => {
     const updated = [...projects];
     updated[i].present = e.target.checked;
     updated[i].endDate = e.target.checked ? "Present" : "";
-    setEducation(updated);
+    setProjects(updated);
   };
 
 
