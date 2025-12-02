@@ -352,7 +352,6 @@ const ProfileCreationPage = () => {
       />
     <div className="page-container">
       {/* <button className="back-to-gen">Back</button> */}
-      <button onClick={() => { navigate('/resumegeneration')}} className="back-button">Back</button>
       <form onSubmit={handleSubmit} className="form">
       <button 
         onClick={() => navigate("/resumegeneration")}
