@@ -7,8 +7,7 @@ class PersonalInfo(BaseModel):
     firstname: str
     lastname: str
     phone: Optional[str] = None
-    pronoun: Optional[str] = None
-    email: Optional[str] = None 
+    email: str
 
 class EducationItem(BaseModel):
     institution: str
@@ -18,7 +17,6 @@ class EducationItem(BaseModel):
     minor: Optional[str] = None
     degree: Optional[str] = None
     gpa: Optional[str] = None
-    present: Optional[bool] = False
 
 class WorkItem(BaseModel):
     title: str
@@ -27,7 +25,6 @@ class WorkItem(BaseModel):
     endDate: Optional[str] = None
     location: Optional[str] = None
     description: List[str] = [] 
-    present: Optional[bool] = False
 
 class ProjectItem(BaseModel):
     title: str
@@ -35,20 +32,15 @@ class ProjectItem(BaseModel):
     endDate: Optional[str] = None
     tools: List[str] = []
     descriptions: List[str] = []
-    present: Optional[bool] = False
 
 class UserProfile(BaseModel):
     personal: PersonalInfo
-    Summary: Optional[str] = None 
     
     work: List[WorkItem] = []
-
     projects: List[ProjectItem] = [] 
     
     education: List[EducationItem] = []
     skills: List[str] = [] 
-    
-    certifications: List[str] = []
     websites: List[str] = []
 
 class NewJob(BaseModel):
