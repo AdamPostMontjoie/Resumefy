@@ -30,18 +30,19 @@ const db = admin.firestore();
 // for latex generation
 
 function generateLatex(data) {
-  const personal = data.personal || {};
-  const education = data.education || [];
-  const work = data.work || [];
-  const projects = data.projects || {};
-  const skills = data['technical skills'] || {};
-
-
-//making sure special characters doesnt affect the pdf from generating
+  //making sure special characters doesnt affect the pdf from generating
   const escapeLatex = (str) =>
     typeof str === 'string'
       ? str.replace(/([#\$%&_\{\}\\])/g, '\\$1')
       : '';
+
+  const personal = data.personal || {};
+  const education = data.education || [];
+  const work = data.work || [];
+  const projects = data.projects || {};
+  const skills = data.skills || [];
+  const escapedSkills = skills.map(s => escapeLatex(s));
+  const skillsString = escapedSkills.join(', ');
 
   let latex = `
 \\documentclass[letterpaper,11pt]{article}
@@ -146,18 +147,14 @@ function generateLatex(data) {
   }
 
   // skills section
-  latex += `\\section{Skills}
-\\begin{itemize}[leftmargin=0.1in, label={}, itemsep=0pt]
-\\item[]\\small{\\textbf{Languages:} ${escapeLatex(skills.languages)}} \\\\
-\\item[]\\small{\\textbf{Frameworks:} ${escapeLatex(skills.frameworks)}} \\\\
-\\item[]\\small{\\textbf{Developer Tools:} ${escapeLatex(skills['developer tools'])}} \\\\
-\\item[]\\small{\\textbf{Libraries:} ${escapeLatex(skills.libraries)}}
+latex += `\\section{Skills}
+\\begin{itemize}[leftmargin=0.2in, label={}, itemsep=0pt]
+\\item[] \\small{${skillsString}}
 \\end{itemize}
-
 \\end{document}
 `;
-
   return latex;
+
 }
 
 // route to generate the pdf
