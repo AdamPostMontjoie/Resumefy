@@ -47,7 +47,7 @@ const CollapsibleSection = ({ title, children, expandAllTrigger }) => {
 };
 
 const ProfileCreationPage = () => {
-  const [collegeList,setCollegeList] = useState([])
+  const [collegeList, setCollegeList] = useState([])
   const [degreesList, setDegreesList] = useState([])
   const [majorsList, setMajorsList] = useState([])
   useEffect(() => {
@@ -138,11 +138,6 @@ const ProfileCreationPage = () => {
               ? profile.skills 
               : [""]
           );  
-          setCertifications(
-            profile.certifications && profile.certifications.length > 0 
-              ? profile.certifications 
-              : [""]
-          );
           setWebsites(
             profile.websites && profile.websites.length > 0 
               ? profile.websites 
@@ -207,11 +202,6 @@ const ProfileCreationPage = () => {
     const updated = [...skills];
     updated[i] = e.target.value;
     setSkills(updated);
-  };
-  const handleCertChange = (i, e) => {
-    const updated = [...certifications];
-    updated[i] = e.target.value;
-    setCertifications(updated);
   };
   const handleWebsiteChange = (i, e) => {
     const updated = [...websites];
@@ -667,7 +657,7 @@ const ProfileCreationPage = () => {
           ))}
           <button type="button" onClick={addSkill} className="add-button">Add Skill</button>
         </CollapsibleSection>
-          {/*Certs */}
+          {/*Websites */}
         <CollapsibleSection title="Websites / Links" expandAllTrigger={expandAllTrigger}>
           {websites.map((url, i) => (
             <div key={i} className="list-item-container">
