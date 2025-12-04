@@ -76,7 +76,6 @@ const ProfileCreationPage = () => {
     lastname:"",
     email: "",
     phone: "",
-    pronoun: "",
   });
 
   const [education, setEducation] = useState([
@@ -89,11 +88,7 @@ const ProfileCreationPage = () => {
     { title: "", tools: [""], startDate: "", endDate:"", descriptions: [""] },
   ]);
   const [skills, setSkills] = useState([""]);
-
-  // New sections
-  const [certifications, setCertifications] = useState([""]);
   const [websites, setWebsites] = useState([""]);
-  const [summary, setSummary] = useState("");
 
   const [expandAllTrigger, setExpandAllTrigger] = useState(false);
   const navigate = useNavigate();
@@ -119,8 +114,6 @@ const ProfileCreationPage = () => {
           //update profile
           const profile = result.data.profile || {};
           const email = result.data.email || "";
-
-          setSummary(profile.Summary || "");
           setPersonalInfo({
             ...(profile.personal || {}),
             email: email
@@ -235,13 +228,13 @@ const ProfileCreationPage = () => {
     const updated = [...workExperience];
     updated[i].present = e.target.checked;
     updated[i].endDate = e.target.checked ? "Present" : "";
-    setEducation(updated);
+    setWorkExperience(updated);
   };
     const handleProjectPresentChange = (i, e) => {
     const updated = [...projects];
     updated[i].present = e.target.checked;
     updated[i].endDate = e.target.checked ? "Present" : "";
-    setEducation(updated);
+    setProjects(updated);
   };
 
 
@@ -293,8 +286,6 @@ const ProfileCreationPage = () => {
   };
   const addSkill = () => setSkills([...skills, ""]);
   const removeSkill = (i) => setSkills(skills.filter((_, x) => x !== i));
-  const addCert = () => setCertifications([...certifications, ""]);
-  const removeCert = (i) => setCertifications(certifications.filter((_, x) => x !== i));
   const addWebsite = () => setWebsites([...websites, ""]);
   const removeWebsite = (i) => setWebsites(websites.filter((_, x) => x !== i));
 
@@ -311,12 +302,9 @@ const ProfileCreationPage = () => {
               firstname: personalInfo.firstname,
               lastname:personalInfo.lastname,
               phone:personalInfo.phone,
-              pronoun:personalInfo.pronoun
             },
-            Summary:summary,
             work:workExperience,
             project:projects,
-            certifications:certifications,
             education:education,
             skills:skills,
             websites:websites
@@ -352,7 +340,6 @@ const ProfileCreationPage = () => {
       />
     <div className="page-container">
       {/* <button className="back-to-gen">Back</button> */}
-      <button onClick={() => { navigate('/resumegeneration')}} className="back-button">Back</button>
       <form onSubmit={handleSubmit} className="form">
       <button 
         onClick={() => navigate("/resumegeneration")}
@@ -681,16 +668,6 @@ const ProfileCreationPage = () => {
           <button type="button" onClick={addSkill} className="add-button">Add Skill</button>
         </CollapsibleSection>
           {/*Certs */}
-        <CollapsibleSection title="Certifications" expandAllTrigger={expandAllTrigger}>
-          {certifications.map((cert, i) => (
-            <div key={i} className="list-item-container">
-              <input placeholder="Certification name" value={cert} onChange={(e) => handleCertChange(i, e)} className="input input-flex" />
-              <button type="button" onClick={() => removeCert(i)} className="remove-button">Remove</button>
-            </div>
-          ))}
-          <button type="button" onClick={addCert} className="add-button">Add Certification</button>
-        </CollapsibleSection>
-
         <CollapsibleSection title="Websites / Links" expandAllTrigger={expandAllTrigger}>
           {websites.map((url, i) => (
             <div key={i} className="list-item-container">
@@ -700,7 +677,6 @@ const ProfileCreationPage = () => {
           ))}
           <button type="button" onClick={addWebsite} className="add-button">Add Website</button>
         </CollapsibleSection>
-
         <button type="submit" className="submit-button">Submit Profile</button>
       </form>
     </div>

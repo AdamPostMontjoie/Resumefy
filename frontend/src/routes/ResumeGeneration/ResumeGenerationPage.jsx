@@ -115,37 +115,9 @@ return (
       
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
         <h2 style={{ fontSize: '2rem', fontWeight: 700, margin: 0 }}> Instructions </h2>
-        <p style={{ color: '#6b7280', margin: 0 }}> Copy and Paste the job description and job responsibilities below </p>
+        <p style={{ color: '#6b7280', margin: 0 }}> Copy and Paste the job description and job title below </p>
         <p style={{ color: '#6b7280', margin: 0 }}> Click "Generate Resume" when done </p>
       </div>
-
-        <h1 style={{ margin: 0, position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
-          Create Your Resume
-        </h1>
-
-        <div style={{ display: "flex", gap: "10px" }}>
-          <button onClick={editProfile} className="quickOptions">Edit Profile</button>
-          <button onClick={handleLogout} className="quickOptions">Logout</button>
-        </div>
-      </div>
-
-      {/* Instructions */}
-      <div
-        style={{
-          position: "relative",
-          display: "flex",
-          alignItems: "center",
-          padding: "40px",
-          maxWidth: "1400px",
-          margin: "0 auto",
-          width: "100%",
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <h2 style={{ fontSize: "2rem", fontWeight: 700, margin: 0 }}>Instructions</h2>
-          <p style={{ color: "#6b7280", margin: 0 }}>Paste job description and responsibilities</p>
-          <p style={{ color: "#6b7280", margin: 0 }}>Click "Generate Resume"</p>
-        </div>
 
         {/* Generate button */}
         <div style={{ position: "absolute", left: "54%", transform: "translateX(-50%)", minHeight: '150px' }}>
@@ -179,7 +151,7 @@ return (
       </div>
 
       {/* Text Areas */}
-      <div style={{ display: "flex", gap: "30px" }}>
+      <div style={{ display: "flex", gap: "30px", marginLeft: "100px"}}>
         <div style={{ flex: 1 }}>
           <div
             style={{
