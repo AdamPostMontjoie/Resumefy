@@ -47,7 +47,7 @@ const CollapsibleSection = ({ title, children, expandAllTrigger }) => {
 };
 
 const ProfileCreationPage = () => {
-  const [collegeList,setCollegeList] = useState([])
+  const [collegeList, setCollegeList] = useState([])
   const [degreesList, setDegreesList] = useState([])
   const [majorsList, setMajorsList] = useState([])
   useEffect(() => {
@@ -121,28 +121,23 @@ const ProfileCreationPage = () => {
           setEducation(
             profile.education && profile.education.length > 0 
               ? profile.education 
-              : [{ institution: "", startDate: "", endDate:"", present: false, major: "", minor: "", degree: "", gpa: "" }]
+              : [{ institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", gpa: "" }]
           );
           setWorkExperience(
             profile.work && profile.work.length > 0 
               ? profile.work 
-              : [{ title: "", company: "", startDate: "", endDate:"", present: false, description: [""], location: "" }]
+              : [{ title: "", company: "", startDate: "", endDate:"", description: [""], location: "" }]
           );   
           setProjects(
             profile.projects && profile.projects.length > 0
               ? profile.projects 
-              : [{ title: "", tools: [""], startDate: "", endDate:"", present: false, descriptions: [""] }]
+              : [{ title: "", tools: [""], startDate: "", endDate:"", descriptions: [""] }]
           );
           setSkills(
             profile.skills && profile.skills.length > 0 
               ? profile.skills 
               : [""]
           );  
-          setCertifications(
-            profile.certifications && profile.certifications.length > 0 
-              ? profile.certifications 
-              : [""]
-          );
           setWebsites(
             profile.websites && profile.websites.length > 0 
               ? profile.websites 
@@ -208,34 +203,16 @@ const ProfileCreationPage = () => {
     updated[i] = e.target.value;
     setSkills(updated);
   };
-  const handleCertChange = (i, e) => {
-    const updated = [...certifications];
-    updated[i] = e.target.value;
-    setCertifications(updated);
-  };
   const handleWebsiteChange = (i, e) => {
     const updated = [...websites];
     updated[i] = e.target.value;
     setWebsites(updated);
   };
-  const handleEducationPresentChange = (i, e) => {
-    const updated = [...education];
-    updated[i].present = e.target.checked;
-    updated[i].endDate = e.target.checked ? "Present" : "";
-    setEducation(updated);
-  };
-    const handleExperiencePresentChange = (i, e) => {
-    const updated = [...workExperience];
-    updated[i].present = e.target.checked;
-    updated[i].endDate = e.target.checked ? "Present" : "";
-    setWorkExperience(updated);
-  };
-    const handleProjectPresentChange = (i, e) => {
-    const updated = [...projects];
-    updated[i].present = e.target.checked;
-    updated[i].endDate = e.target.checked ? "Present" : "";
-    setProjects(updated);
-  };
+
+  const [EduisChecked, EdusetIsChecked] = useState(false);
+  const [ExpisChecked, ExpsetIsChecked] = useState(false);
+  const [ProisChecked, ProsetIsChecked] = useState(false);
+
 
 
   // Add/remove
@@ -420,12 +397,17 @@ const ProfileCreationPage = () => {
                   maxDate={new Date()}
                   
                   className="input input-half"
+                  required
                 />
-                {!edu.present && (
+                {!EduisChecked && (
                 <DatePicker
                   name="endDate"
                   placeholderText="End Date(MM/YYYY)"
-                  selected={edu.endDate ? new Date(edu.endDate.replace(/-/g, '/')) : null}
+                  selected={
+                    edu.endDate && edu.endDate !== "Present"
+                      ? new Date(edu.endDate.replace(/-/g, '/'))
+                      : null
+                  }
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
                     const mockEvent = {
@@ -440,13 +422,23 @@ const ProfileCreationPage = () => {
                   dateFormat="MM/yyyy"
                   maxDate={new Date()}
                   className="input input-half"
+                  required
                 />
               )}
+
+              {/* Present Checkbox */}
               <label className="present-checkbox">
                 <input
                   type="checkbox"
-                  checked={edu.present}
-                  onChange={(e) => handleEducationPresentChange(index, e)}
+                  checked={EduisChecked}
+                  onChange={(e) => {
+                    const updated = [...education];
+                    const checked = e.target.checked;
+
+                    EdusetIsChecked(checked);
+                    updated[index].endDate = checked ? "Present" : "";
+                    setEducation(updated);
+                  }}
                 />
                 Present
               </label>
@@ -474,7 +466,7 @@ const ProfileCreationPage = () => {
                   value={edu.minor}
                   onChange={(e) => handleEducationChange(index, e)}
                   className="input input-half"
-                  required
+                  
                 >
                   <option value="">Select a Minor</option>
                   {majorsList.map((minor)=>(
@@ -483,7 +475,7 @@ const ProfileCreationPage = () => {
                     </option>
                   ))}
                 </select>
-                <span className="asterisk">*</span>
+                
                 </div>
                 <div className="required">
                 <select
@@ -537,12 +529,17 @@ const ProfileCreationPage = () => {
                   maxDate={new Date()}
                   
                   className="input input-half"
+                  required
                 />
-              {!exp.present && (
+              {!ExpisChecked && (
                 <DatePicker
                   name="endDate"
                   placeholderText="End Date(MM/YYYY)"
-                  selected={exp.endDate ? new Date(exp.endDate.replace(/-/g, '/')) : null}
+                  selected={
+                    exp.endDate && exp.endDate !== "Present"
+                      ? new Date(exp.endDate.replace(/-/g, '/'))
+                      : null
+                  }
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
                     const mockEvent = {
@@ -557,13 +554,23 @@ const ProfileCreationPage = () => {
                   dateFormat="MM/yyyy"
                   maxDate={new Date()}
                   className="input input-half"
+                  required
                 />
               )}
+
+              {/* Present Checkbox */}
               <label className="present-checkbox">
                 <input
                   type="checkbox"
-                  checked={exp.present}
-                  onChange={(e) => handleExperiencePresentChange(index, e)}
+                  checked={ExpisChecked}
+                  onChange={(e) => {
+                    const updated = [...workExperience];
+                    const checked = e.target.checked;
+
+                    ExpsetIsChecked(checked);
+                    updated[index].endDate = checked ? "Present" : "";
+                    setWorkExperience(updated);
+                  }}
                 />
                 Present
               </label>
@@ -588,7 +595,7 @@ const ProfileCreationPage = () => {
             <input name="title" placeholder="Project Title" value={pro.title} onChange={(e) => handleProChange(index, e)} className="input" required />
             {pro.tools.map((tool, toolI) => (
               <div key={toolI} className="list-item-container">
-                <input placeholder="Tools" value={tool} onChange={(e) => handleToolChange(index, toolI, e)} className="input input-flex"/>
+                <input placeholder="Tools" value={tool} onChange={(e) => handleToolChange(index, toolI, e)} className="input input-flex" require/>
                 <button type="button" onClick={() => removeTool(index, toolI)} className="remove-button">Remove</button>
               </div>
             ))}
@@ -615,39 +622,54 @@ const ProfileCreationPage = () => {
                   maxDate={new Date()}
                   
                   className="input input-half"
+                  required
                 />
-              {!pro.present && (
-                <DatePicker
-                  name="endDate"
-                  placeholderText="End Date(MM/YYYY)"
-                  selected={pro.endDate ? new Date(pro.endDate.replace(/-/g, '/')) : null}
-                  onChange={(date) => {
-                    const value = date ? date.toISOString().split('T')[0] : "";
-                    const mockEvent = {
-                      target: {
-                        name: "endDate",
-                        value: value
-                      }
-                    };
-                    handleProChange(index, mockEvent);
-                  }}
-                  showMonthYearPicker
-                  dateFormat="MM/yyyy"
-                  maxDate={new Date()}
-                  className="input input-half"
-                />
-              )}
-              <label className="present-checkbox">
-                <input
-                  type="checkbox"
-                  checked={pro.present}
-                  onChange={(e) => handleProjectPresentChange(index, e)}
-                />
-                Present
+                {!ProisChecked && (
+                  <DatePicker
+                    name="endDate"
+                    placeholderText="End Date(MM/YYYY)"
+                    selected={
+                      pro.endDate && pro.endDate !== "Present"
+                        ? new Date(pro.endDate.replace(/-/g, '/'))
+                        : null
+                    }
+                    onChange={(date) => {
+                      const value = date ? date.toISOString().split('T')[0] : "";
+                      const mockEvent = {
+                        target: {
+                          name: "endDate",
+                          value: value
+                        }
+                      };
+                      handleProChange(index, mockEvent);
+                    }}
+                    showMonthYearPicker
+                    dateFormat="MM/yyyy"
+                    maxDate={new Date()}
+                    className="input input-half"
+                    required
+                  />
+                )}
+
+                {/* Present Checkbox */}
+                <label className="present-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={ProisChecked}
+                    onChange={(e) => {
+                      const updated = [...projects];
+                      const checked = e.target.checked;
+
+                      ProsetIsChecked(checked);
+                      updated[index].endDate = checked ? "Present" : "";
+                      setProjects(updated);
+                    }}
+                  />
+                  Present
               </label>
             {pro.descriptions.map((resp, respI) => (
               <div key={respI} className="list-item-container">
-                <input placeholder="Responsibilities" value={resp} onChange={(e) => handleRespChange(index, respI, e)} className="input input-flex"/>
+                <input placeholder="Project Description" value={resp} onChange={(e) => handleRespChange(index, respI, e)} className="input input-flex" required/>
                 <button type="button" onClick={() => removeResponsibilities(index, respI)} className="remove-button">Remove</button>
               </div>
             ))}
@@ -661,21 +683,36 @@ const ProfileCreationPage = () => {
         <CollapsibleSection title="Skills" expandAllTrigger={expandAllTrigger}>
           {skills.map((skill, i) => (
             <div key={i} className="list-item-container">
-              <input placeholder="Skill" value={skill} onChange={(e) => handleSkillChange(i, e)} className="input input-flex" />
+              <input placeholder="Skill" value={skill} onChange={(e) => handleSkillChange(i, e)} className="input input-flex" required/>
               <button type="button" onClick={() => removeSkill(i)} className="remove-button">Remove</button>
             </div>
           ))}
           <button type="button" onClick={addSkill} className="add-button">Add Skill</button>
         </CollapsibleSection>
           {/*Certs */}
+        <CollapsibleSection title="Certifications" expandAllTrigger={expandAllTrigger}>
+          {certifications.map((cert, i) => (
+            <div key={i} className="list-item-container">
+              <input placeholder="Certification name" value={cert} onChange={(e) => handleCertChange(i, e)} className="input input-flex" required/>
+              <button type="button" onClick={() => removeCert(i)} className="remove-button">Remove</button>
+              <span className="asterisk">*</span>
+            </div>
+            
+          ))}
+          <button type="button" onClick={addCert} className="add-button">Add Certification</button>
+          
+          
+        </CollapsibleSection>
+
         <CollapsibleSection title="Websites / Links" expandAllTrigger={expandAllTrigger}>
           {websites.map((url, i) => (
             <div key={i} className="list-item-container">
-              <input placeholder="Website or Portfolio URL" value={url} onChange={(e) => handleWebsiteChange(i, e)} className="input input-flex" />
+              <input placeholder="Website or Portfolio URL" value={url} onChange={(e) => handleWebsiteChange(i, e)} className="input input-flex" required/>
               <button type="button" onClick={() => removeWebsite(i)} className="remove-button">Remove</button>
             </div>
           ))}
           <button type="button" onClick={addWebsite} className="add-button">Add Website</button>
+          
         </CollapsibleSection>
         <button type="submit" className="submit-button">Submit Profile</button>
       </form>
