@@ -9,6 +9,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import institutions from './us_institutions.json'
 import degrees from './degrees.json'
 import majors from './majors.json'
+import logo from "../../assets/logo.png";
+
 
 const CollapsibleSection = ({ title, children, expandAllTrigger }) => {
   const [open, setOpen] = useState(true);
@@ -20,6 +22,7 @@ const CollapsibleSection = ({ title, children, expandAllTrigger }) => {
   
 
   return (
+    
     <section className="collapsible-section">
       <button
         type="button"
@@ -44,7 +47,7 @@ const CollapsibleSection = ({ title, children, expandAllTrigger }) => {
 };
 
 const ProfileCreationPage = () => {
-  const [collegeList,setCollegeList] = useState([])
+  const [collegeList, setCollegeList] = useState([])
   const [degreesList, setDegreesList] = useState([])
   const [majorsList, setMajorsList] = useState([])
   useEffect(() => {
@@ -73,7 +76,6 @@ const ProfileCreationPage = () => {
     lastname:"",
     email: "",
     phone: "",
-    pronoun: "",
   });
 
   const [education, setEducation] = useState([
@@ -86,11 +88,7 @@ const ProfileCreationPage = () => {
     { title: "", tools: [""], startDate: "", endDate:"", descriptions: [""] },
   ]);
   const [skills, setSkills] = useState([""]);
-
-  // New sections
-  const [certifications, setCertifications] = useState([""]);
   const [websites, setWebsites] = useState([""]);
-  const [summary, setSummary] = useState("");
 
   const [expandAllTrigger, setExpandAllTrigger] = useState(false);
   const navigate = useNavigate();
@@ -116,8 +114,6 @@ const ProfileCreationPage = () => {
           //update profile
           const profile = result.data.profile || {};
           const email = result.data.email || "";
-
-          setSummary(profile.Summary || "");
           setPersonalInfo({
             ...(profile.personal || {}),
             email: email
@@ -142,11 +138,6 @@ const ProfileCreationPage = () => {
               ? profile.skills 
               : [""]
           );  
-          setCertifications(
-            profile.certifications && profile.certifications.length > 0 
-              ? profile.certifications 
-              : [""]
-          );
           setWebsites(
             profile.websites && profile.websites.length > 0 
               ? profile.websites 
@@ -212,11 +203,6 @@ const ProfileCreationPage = () => {
     updated[i] = e.target.value;
     setSkills(updated);
   };
-  const handleCertChange = (i, e) => {
-    const updated = [...certifications];
-    updated[i] = e.target.value;
-    setCertifications(updated);
-  };
   const handleWebsiteChange = (i, e) => {
     const updated = [...websites];
     updated[i] = e.target.value;
@@ -277,8 +263,6 @@ const ProfileCreationPage = () => {
   };
   const addSkill = () => setSkills([...skills, ""]);
   const removeSkill = (i) => setSkills(skills.filter((_, x) => x !== i));
-  const addCert = () => setCertifications([...certifications, ""]);
-  const removeCert = (i) => setCertifications(certifications.filter((_, x) => x !== i));
   const addWebsite = () => setWebsites([...websites, ""]);
   const removeWebsite = (i) => setWebsites(websites.filter((_, x) => x !== i));
 
@@ -295,12 +279,9 @@ const ProfileCreationPage = () => {
               firstname: personalInfo.firstname,
               lastname:personalInfo.lastname,
               phone:personalInfo.phone,
-              pronoun:personalInfo.pronoun
             },
-            Summary:summary,
             work:workExperience,
             project:projects,
-            certifications:certifications,
             education:education,
             skills:skills,
             websites:websites
@@ -318,13 +299,32 @@ const ProfileCreationPage = () => {
   };
 
   return (
-    <div>
-    <button onClick={() => { navigate('/')}} className="back-to-main">Ex</button>
-
+    <div style={{ backgroundColor: "#F7EBDF", minHeight: "100vh" }}>
+  
+      {/* Logo only */}
+      <img
+        src={logo}
+        alt="Resumefy Logo"
+        onClick={() => navigate("/")}
+        style={{
+          position: "absolute",
+          top: "25px",
+          left: "40px",
+          height: "110px",
+          cursor: "pointer",
+          zIndex: 999,
+        }}
+      />
     <div className="page-container">
       {/* <button className="back-to-gen">Back</button> */}
-      <button onClick={() => { navigate('/resumegeneration')}} className="back-button">Back</button>
       <form onSubmit={handleSubmit} className="form">
+      <button 
+        onClick={() => navigate("/resumegeneration")}
+        className="back-button-inline"
+      >
+      ← Back
+      </button>
+
         <h1 className="title">Your Profile</h1>
         {/* Personal */}
         <CollapsibleSection title="Personal Info" expandAllTrigger={expandAllTrigger}>
@@ -714,7 +714,6 @@ const ProfileCreationPage = () => {
           <button type="button" onClick={addWebsite} className="add-button">Add Website</button>
           
         </CollapsibleSection>
-
         <button type="submit" className="submit-button">Submit Profile</button>
       </form>
     </div>
