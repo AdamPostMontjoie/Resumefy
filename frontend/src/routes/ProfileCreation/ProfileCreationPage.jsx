@@ -79,7 +79,7 @@ const ProfileCreationPage = () => {
   });
 
   const [education, setEducation] = useState([
-    { institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", gpa: "" },
+    { institution: "", startDate: "", endDate:"", major: "", minor: "", degree: ""},
   ]);
   const [workExperience, setWorkExperience] = useState([
     { title: "", company: "", startDate: "", endDate:"", description: [""], location: "" },
@@ -121,7 +121,7 @@ const ProfileCreationPage = () => {
           setEducation(
             profile.education && profile.education.length > 0 
               ? profile.education 
-              : [{ institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", gpa: "" }]
+              : [{ institution: "", startDate: "", endDate:"", major: "", minor: "", degree: ""}]
           );
           setWorkExperience(
             profile.work && profile.work.length > 0 
@@ -688,20 +688,6 @@ const ProfileCreationPage = () => {
             </div>
           ))}
           <button type="button" onClick={addSkill} className="add-button">Add Skill</button>
-        </CollapsibleSection>
-          {/*Certs */}
-        <CollapsibleSection title="Certifications" expandAllTrigger={expandAllTrigger}>
-          {certifications.map((cert, i) => (
-            <div key={i} className="list-item-container">
-              <input placeholder="Certification name" value={cert} onChange={(e) => handleCertChange(i, e)} className="input input-flex" required/>
-              <button type="button" onClick={() => removeCert(i)} className="remove-button">Remove</button>
-              <span className="asterisk">*</span>
-            </div>
-            
-          ))}
-          <button type="button" onClick={addCert} className="add-button">Add Certification</button>
-          
-          
         </CollapsibleSection>
 
         <CollapsibleSection title="Websites / Links" expandAllTrigger={expandAllTrigger}>
