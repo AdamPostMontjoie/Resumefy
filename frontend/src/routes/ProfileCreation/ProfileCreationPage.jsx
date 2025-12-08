@@ -125,17 +125,17 @@ const ProfileCreationPage = () => {
           setEducation(
             profile.education && profile.education.length > 0 
               ? profile.education 
-              : [{ institution: "", startDate: "", endDate:"", present: false, major: "", minor: "", degree: "", gpa: "" }]
+              : [{ institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", gpa: "" }]
           );
           setWorkExperience(
             profile.work && profile.work.length > 0 
               ? profile.work 
-              : [{ title: "", company: "", startDate: "", endDate:"", present: false, description: [""], location: "" }]
+              : [{ title: "", company: "", startDate: "", endDate:"", description: [""], location: "" }]
           );   
           setProjects(
             profile.projects && profile.projects.length > 0
               ? profile.projects 
-              : [{ title: "", tools: [""], startDate: "", endDate:"", present: false, descriptions: [""] }]
+              : [{ title: "", tools: [""], startDate: "", endDate:"", descriptions: [""] }]
           );
           setSkills(
             profile.skills && profile.skills.length > 0 
@@ -222,24 +222,12 @@ const ProfileCreationPage = () => {
     updated[i] = e.target.value;
     setWebsites(updated);
   };
-  const handleEducationPresentChange = (i, e) => {
-    const updated = [...education];
-    updated[i].present = e.target.checked;
-    updated[i].endDate = e.target.checked ? "Present" : "";
-    setEducation(updated);
-  };
-    const handleExperiencePresentChange = (i, e) => {
-    const updated = [...workExperience];
-    updated[i].present = e.target.checked;
-    updated[i].endDate = e.target.checked ? "Present" : "";
-    setEducation(updated);
-  };
-    const handleProjectPresentChange = (i, e) => {
-    const updated = [...projects];
-    updated[i].present = e.target.checked;
-    updated[i].endDate = e.target.checked ? "Present" : "";
-    setEducation(updated);
-  };
+
+  const [EduisChecked, EdusetIsChecked] = useState(false);
+  const [ExpisChecked, ExpsetIsChecked] = useState(false);
+  const [ProisChecked, ProsetIsChecked] = useState(false);
+
+
 
   // Add/remove
   const addEducation = () => {
@@ -409,12 +397,17 @@ const ProfileCreationPage = () => {
                   maxDate={new Date()}
                   
                   className="input input-half"
+                  required
                 />
-                {!edu.present && (
+                {!EduisChecked && (
                 <DatePicker
                   name="endDate"
                   placeholderText="End Date(MM/YYYY)"
-                  selected={edu.endDate ? new Date(edu.endDate.replace(/-/g, '/')) : null}
+                  selected={
+                    edu.endDate && edu.endDate !== "Present"
+                      ? new Date(edu.endDate.replace(/-/g, '/'))
+                      : null
+                  }
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
                     const mockEvent = {
@@ -429,13 +422,23 @@ const ProfileCreationPage = () => {
                   dateFormat="MM/yyyy"
                   maxDate={new Date()}
                   className="input input-half"
+                  required
                 />
               )}
+
+              {/* Present Checkbox */}
               <label className="present-checkbox">
                 <input
                   type="checkbox"
-                  checked={edu.present}
-                  onChange={(e) => handleEducationPresentChange(index, e)}
+                  checked={EduisChecked}
+                  onChange={(e) => {
+                    const updated = [...education];
+                    const checked = e.target.checked;
+
+                    EdusetIsChecked(checked);
+                    updated[index].endDate = checked ? "Present" : "";
+                    setEducation(updated);
+                  }}
                 />
                 Present
               </label>
@@ -526,12 +529,17 @@ const ProfileCreationPage = () => {
                   maxDate={new Date()}
                   
                   className="input input-half"
+                  required
                 />
-              {!exp.present && (
+              {!ExpisChecked && (
                 <DatePicker
                   name="endDate"
                   placeholderText="End Date(MM/YYYY)"
-                  selected={exp.endDate ? new Date(exp.endDate.replace(/-/g, '/')) : null}
+                  selected={
+                    exp.endDate && exp.endDate !== "Present"
+                      ? new Date(exp.endDate.replace(/-/g, '/'))
+                      : null
+                  }
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
                     const mockEvent = {
@@ -546,13 +554,23 @@ const ProfileCreationPage = () => {
                   dateFormat="MM/yyyy"
                   maxDate={new Date()}
                   className="input input-half"
+                  required
                 />
               )}
+
+              {/* Present Checkbox */}
               <label className="present-checkbox">
                 <input
                   type="checkbox"
-                  checked={exp.present}
-                  onChange={(e) => handleExperiencePresentChange(index, e)}
+                  checked={ExpisChecked}
+                  onChange={(e) => {
+                    const updated = [...workExperience];
+                    const checked = e.target.checked;
+
+                    ExpsetIsChecked(checked);
+                    updated[index].endDate = checked ? "Present" : "";
+                    setWorkExperience(updated);
+                  }}
                 />
                 Present
               </label>
@@ -604,35 +622,50 @@ const ProfileCreationPage = () => {
                   maxDate={new Date()}
                   
                   className="input input-half"
+                  required
                 />
-              {!pro.present && (
-                <DatePicker
-                  name="endDate"
-                  placeholderText="End Date(MM/YYYY)"
-                  selected={pro.endDate ? new Date(pro.endDate.replace(/-/g, '/')) : null}
-                  onChange={(date) => {
-                    const value = date ? date.toISOString().split('T')[0] : "";
-                    const mockEvent = {
-                      target: {
-                        name: "endDate",
-                        value: value
-                      }
-                    };
-                    handleProChange(index, mockEvent);
-                  }}
-                  showMonthYearPicker
-                  dateFormat="MM/yyyy"
-                  maxDate={new Date()}
-                  className="input input-half"
-                />
-              )}
-              <label className="present-checkbox">
-                <input
-                  type="checkbox"
-                  checked={pro.present}
-                  onChange={(e) => handleProjectPresentChange(index, e)}
-                />
-                Present
+                {!ProisChecked && (
+                  <DatePicker
+                    name="endDate"
+                    placeholderText="End Date(MM/YYYY)"
+                    selected={
+                      pro.endDate && pro.endDate !== "Present"
+                        ? new Date(pro.endDate.replace(/-/g, '/'))
+                        : null
+                    }
+                    onChange={(date) => {
+                      const value = date ? date.toISOString().split('T')[0] : "";
+                      const mockEvent = {
+                        target: {
+                          name: "endDate",
+                          value: value
+                        }
+                      };
+                      handleProChange(index, mockEvent);
+                    }}
+                    showMonthYearPicker
+                    dateFormat="MM/yyyy"
+                    maxDate={new Date()}
+                    className="input input-half"
+                    required
+                  />
+                )}
+
+                {/* Present Checkbox */}
+                <label className="present-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={ProisChecked}
+                    onChange={(e) => {
+                      const updated = [...projects];
+                      const checked = e.target.checked;
+
+                      ProsetIsChecked(checked);
+                      updated[index].endDate = checked ? "Present" : "";
+                      setProjects(updated);
+                    }}
+                  />
+                  Present
               </label>
             {pro.descriptions.map((resp, respI) => (
               <div key={respI} className="list-item-container">
@@ -662,7 +695,9 @@ const ProfileCreationPage = () => {
             <div key={i} className="list-item-container">
               <input placeholder="Certification name" value={cert} onChange={(e) => handleCertChange(i, e)} className="input input-flex" required/>
               <button type="button" onClick={() => removeCert(i)} className="remove-button">Remove</button>
+              <span className="asterisk">*</span>
             </div>
+            
           ))}
           <button type="button" onClick={addCert} className="add-button">Add Certification</button>
           
