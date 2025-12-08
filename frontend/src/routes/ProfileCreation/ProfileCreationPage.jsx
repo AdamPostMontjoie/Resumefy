@@ -294,7 +294,7 @@ const ProfileCreationPage = () => {
               phone:personalInfo.phone,
             },
             work:workExperience,
-            project:projects,
+            projects:projects,
             education:education,
             skills:skills,
             websites:websites
