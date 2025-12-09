@@ -16,7 +16,6 @@ class EducationItem(BaseModel):
     major: Optional[str] = None
     minor: Optional[str] = None
     degree: Optional[str] = None
-    gpa: Optional[str] = None
 
 class WorkItem(BaseModel):
     title: str
@@ -35,10 +34,8 @@ class ProjectItem(BaseModel):
 
 class UserProfile(BaseModel):
     personal: PersonalInfo
-    
     work: List[WorkItem] = []
     projects: List[ProjectItem] = [] 
-    
     education: List[EducationItem] = []
     skills: List[str] = [] 
     websites: List[str] = []
