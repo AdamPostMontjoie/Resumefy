@@ -16,6 +16,7 @@ class EducationItem(BaseModel):
     major: Optional[str] = None
     minor: Optional[str] = None
     degree: Optional[str] = None
+    location:Optional[str] = None
 
 class WorkItem(BaseModel):
     title: str
