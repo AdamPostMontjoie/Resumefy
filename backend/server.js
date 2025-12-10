@@ -6,8 +6,9 @@ const { pipeline } = require('@xenova/transformers');
 const cors = require('cors');
 const path = require('path');
 const admin = require('firebase-admin');
+const axios = require('axios');
 
-// sentence transformer
+// sentence transformer (kept for local ranking endpoint if needed)
 let embedder;
 (async () => {
   embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
@@ -36,51 +37,84 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-// --- HELPER: Find data regardless of nesting ---
-function findProfileData(data) {
-  // 1. Try the new structure (userProfile.profile)
-  if (data.userProfile && data.userProfile.profile) return data.userProfile.profile;
-  // 2. Try legacy structure (root or profile)
-  if (data.profile) return data.profile;
-  return data;
+// === HELPER: Map DB Data to Strict Python API Schema ===
+function mapToApiSchema(dbData) {
+  // 1. Find the raw profile object (handling nesting)
+  const raw = dbData.profile || dbData.userProfile?.profile || dbData;
+
+  // 2. Map Personal Info
+  const p = raw.personal || {};
+  const personal = {
+    firstname: p.firstname || p.firstName || p['first name'] || "Jane",
+    lastname: p.lastname || p.lastName || p['last name'] || "Doe",
+    phone: p.phone || p.phoneNumber || "",
+    email: p.email || "no-email@example.com"
+  };
+
+  // 3. Map Work Items (Strictly map 'responsibilities' -> 'description')
+  const work = (raw.work || []).map(w => ({
+    title: w.title || "Untitled",
+    company: w.company || "Unknown",
+    startDate: w.startDate || w.beginningdate || "",
+    endDate: w.endDate || w.endingdate || "",
+    location: w.location || "",
+    // Python model expects List[str] called 'description'
+    description: Array.isArray(w.description) ? w.description : (w.responsibilities || [])
+  }));
+
+  // 4. Map Project Items (Strictly map 'stack' -> 'tools', 'details' -> 'descriptions')
+  let rawProjects = [];
+  if (Array.isArray(raw.projects)) {
+    rawProjects = raw.projects;
+  } else if (raw.projects && typeof raw.projects === 'object') {
+    rawProjects = Object.keys(raw.projects).map(k => ({ title: k, ...raw.projects[k] }));
+  }
+
+  const projects = rawProjects.map(proj => ({
+    title: proj.title || "Untitled",
+    startDate: proj.startDate || proj.beginningdate || "",
+    endDate: proj.endDate || proj.endingdate || "",
+    // Python model expects List[str] called 'tools'
+    tools: Array.isArray(proj.tools) ? proj.tools : (proj.stack || []),
+    // Python model expects List[str] called 'descriptions' (PLURAL)
+    descriptions: Array.isArray(proj.descriptions) ? proj.descriptions : (proj.details || [])
+  }));
+
+  // 5. Map Education
+  const education = (raw.education || []).map(edu => ({
+    institution: edu.institution || edu.school || "Unknown",
+    startDate: edu.startDate || "",
+    endDate: edu.endDate || "",
+    major: edu.major || "",
+    minor: edu.minor || "",
+    degree: edu.degree || "",
+    location: edu.location || ""
+  }));
+
+  return {
+    personal,
+    work,
+    projects,
+    education,
+    skills: raw.skills || [],
+    websites: raw.websites || []
+  };
 }
 
-// for latex generation
-function generateLatex(rawDocData) {
-  const escapeLatex = (str) =>
-    typeof str === 'string'
-      ? str.replace(/([#\$%&_\{\}\\])/g, '\\$1')
-      : '';
+// === LATEX GENERATOR ===
+// Uses the standardized output from the Python API
+function generateLatex(data) {
+  const escapeLatex = (str) => typeof str === 'string' ? str.replace(/([#\$%&_\{\}\\])/g, '\\$1') : '';
 
-  // 1. Extract Data
-  const data = findProfileData(rawDocData);
-  
   const personal = data.personal || {};
   const education = data.education || [];
   const work = data.work || [];
-  
-  // Normalize Projects: Handle both Array (new) and Object (old)
-  let projects = [];
-  if (Array.isArray(data.projects)) {
-    projects = data.projects;
-  } else if (data.projects && typeof data.projects === 'object') {
-    projects = Object.keys(data.projects).map(k => ({ title: k, ...data.projects[k] }));
-  }
-
+  const projects = data.projects || [];
   const skills = data.skills || [];
-  const escapedSkills = skills.map(s => escapeLatex(s));
-  const skillsString = escapedSkills.join(', ');
+  const skillsString = skills.map(s => escapeLatex(s)).join(', ');
 
-  // 2. Map variable names (JSON keys) to Variables for the Template
-  // We use || to ensure it grabs the data whether it's named 'startDate' OR 'beginningdate'
-  
-  const fname = personal.firstname || personal['first name'] || "";
-  const lname = personal.lastname || personal['last name'] || "";
-  
   let latex = `
 \\documentclass[letterpaper,11pt]{article}
-
-% ---- Minimal packages ----
 \\usepackage[margin=1in]{geometry}
 \\usepackage[hidelinks]{hyperref}
 \\usepackage{titlesec}
@@ -88,49 +122,25 @@ function generateLatex(rawDocData) {
 \\usepackage[english]{babel}
 \\usepackage[T1]{fontenc}
 \\usepackage{lmodern}
-
 \\usepackage{setspace}
 \\setstretch{0.95}
 
-% ---- Formatting ----
 \\setlength{\\tabcolsep}{0pt}
 \\raggedright
 \\raggedbottom
 
 \\usepackage{titlesec}
+\\titleformat{\\section}{\\vspace{-4pt}\\scshape\\large}{}{0em}{}[\\vspace{1pt}\\titlerule]
 
-\\titleformat{\\section}
-  {\\vspace{-4pt}\\scshape\\large} % formatting of section title
-  {}                             % label (we don’t use numbering)
-  {0em}                          % horizontal separation
-  {}                             % before-code (leave empty)
-  [\\vspace{1pt}\\titlerule]       % after-code: put line below title
-
-
-\\pdfgentounicode=1 \\newcommand{\\resumeItem}[1]{ \\item\\small{ {#1 \\vspace{-2pt}} } }
-
-\\newcommand{\\resumeSubheading}[4]{
-  \\vspace{-2pt}\\item
-    \\begin{tabular*}{\\textwidth}{l@{\\extracolsep{\\fill}}r}
-      \\textbf{#1} & #2 \\\\
-      \\textit{\\small #3} & \\textit{\\small #4} \\\\
-    \\end{tabular*}\\vspace{-7pt}
-}
-
-\\newcommand{\\resumeSubItem}[1]{\\resumeItem{#1}\\vspace{-4pt}}
-
-\\newcommand{\\resumeSubHeadingListStart}{\\begin{itemize}[leftmargin=0.15in, label={}]}
-\\newcommand{\\resumeSubHeadingListEnd}{\\end{itemize}}
-\\newcommand{\\resumeItemListStart}{\\begin{itemize}[leftmargin=0.2in]}
-\\newcommand{\\resumeItemListEnd}{\\end{itemize}\\vspace{-5pt}}
+\\pdfgentounicode=1 
+\\newcommand{\\resumeItem}[1]{ \\item\\small{ {#1 \\vspace{-2pt}} } }
 
 \\begin{document}
 \\pagestyle{empty}
 
-
 %----------HEADING----------
 \\begin{center}
-    \\textbf{\\Huge \\scshape ${escapeLatex(fname)} ${escapeLatex(lname)}} \\\\ \\vspace{1pt}
+    \\textbf{\\Huge \\scshape ${escapeLatex(personal.firstname)} ${escapeLatex(personal.lastname)}} \\\\ \\vspace{1pt}
     \\small ${escapeLatex(personal.phone)} $|$ \\href{mailto:${escapeLatex(personal.email)}}{${escapeLatex(personal.email)}} 
 \\end{center}
 
@@ -139,229 +149,151 @@ function generateLatex(rawDocData) {
 `;
 
   education.forEach((ed) => {
-    // Map JSON properties to template
-    const start = ed.startDate || ed.beginningdate || "";
-    const end = ed.endDate || ed.endingdate || "";
-    
     latex += `
 \\hspace{0.3cm} \\textbf{${escapeLatex(ed.institution)}} \\hfill ${escapeLatex(ed.location)} \\\\
-\\hspace{0.3cm} \\textit{${escapeLatex(ed.degree)}} \\hfill ${escapeLatex(start)} - ${escapeLatex(end)}
+\\hspace{0.3cm} \\textit{${escapeLatex(ed.degree)} ${ed.major ? 'in ' + escapeLatex(ed.major) : ''}} \\hfill ${escapeLatex(ed.startDate)} - ${escapeLatex(ed.endDate)}
 `;
   });
 
-  // experience section
   latex += `\\section{Experience}`;
-
   work.forEach((job) => {
-    // Map JSON properties to template
-    const start = job.startDate || job.beginningdate || "";
-    const end = job.endDate || job.endingdate || "";
-    const items = job.description || job.responsibilities || [];
-
     latex += `
-\\hspace{0.3cm} \\textbf{${escapeLatex(job.title)}} \\hfill ${escapeLatex(start)} - ${escapeLatex(end)} \\\\
+\\hspace{0.3cm} \\textbf{${escapeLatex(job.title)}} \\hfill ${escapeLatex(job.startDate)} - ${escapeLatex(job.endDate)} \\\\
 \\hspace{0.3cm} \\textit{${escapeLatex(job.company)}} \\hfill \\textit{${escapeLatex(job.location)}} 
 \\hspace{0.3cm}\\begin{itemize}[leftmargin=0.4in, label={$\\vcenter{\\hbox{\\tiny$\\bullet$}}$}, itemsep=0pt] 
 `;
-    items.forEach(
-      (item) => (latex += `  \\item \\small{${escapeLatex(item)}}\n`)
-    );
+    // Python model guarantees 'description' is the list key
+    (job.description || []).forEach(item => latex += `  \\item \\small{${escapeLatex(item)}}\n`);
     latex += `\\end{itemize}`;
   });
 
-  // projects section
   latex += `\\section{Projects}`;
-
-  // Using forEach to handle the normalized projects array
   projects.forEach((proj) => {
-    // Map JSON properties to template
-    const stack = proj.tools || proj.stack || [];
-    const stackStr = Array.isArray(stack) ? stack.join(', ') : stack;
-    const details = proj.descriptions || proj.details || [];
-    const start = proj.startDate || proj.beginningdate || "";
-    const end = proj.endDate || proj.endingdate || "";
-
+    // Python model guarantees 'tools' and 'descriptions' keys
+    const stack = (proj.tools || []).join(', ');
     latex += `
-\\hspace{0.3cm}\\vspace{0pt}\\textbf{${escapeLatex(proj.title)}} $|$ \\textit{${escapeLatex(stackStr)}} \\hfill ${escapeLatex(start)} - ${escapeLatex(end)}
+\\hspace{0.3cm}\\vspace{0pt}\\textbf{${escapeLatex(proj.title)}} $|$ \\textit{${escapeLatex(stack)}} \\hfill ${escapeLatex(proj.startDate)} - ${escapeLatex(proj.endDate)}
 \\hspace{0.3cm}\\begin{itemize}[leftmargin=0.4in, label={$\\vcenter{\\hbox{\\tiny$\\bullet$}}$}, itemsep=0pt]
 `;
-    details.forEach(
-      (d) => (latex += `  \\item \\small{${escapeLatex(d)}}\n`)
-    );
+    (proj.descriptions || []).forEach(d => latex += `  \\item \\small{${escapeLatex(d)}}\n`);
     latex += `\\end{itemize}`;
   });
 
-  // skills section
-latex += `\\section{Skills}
+  latex += `\\section{Skills}
 \\begin{itemize}[leftmargin=0.2in, label={}, itemsep=0pt]
 \\item[] \\small{${skillsString}}
 \\end{itemize}
 \\end{document}
 `;
   return latex;
-
 }
 
-// route to generate the pdf
+// === API ROUTES ===
 app.post('/api/generate', async (req, res) => {
-  const { userId  } = req.body;
+  const { userId, title, description } = req.body;
   if (!userId) return res.status(400).send('Missing userId');
 
   try {
+    // 1. Fetch from Firebase
     const snap = await db.collection('users').doc(userId).get();
     if (!snap.exists) return res.status(404).send('User not found');
+    const docData = snap.data();
+    
+    // 2. Map to Strict Python API Schema
+    const mappedProfile = mapToApiSchema(docData);
+    
+    // 3. Prepare Payload (Strict Snake_Case keys as per FastAPI signature)
+    const payload = {
+      user_profile: mappedProfile,
+      new_job: {
+        title: title,
+        description: description
+      }
+    };
 
-    const data = snap.data();
+    console.log("Sending clean payload to ranker...");
+    
+    // 4. Send to External Python API
+    const response = await axios.post("https://resume-ranker-340638164003.us-central1.run.app/", payload);
+    const optimizedProfile = response.data; // This will match the UserProfile model
+
+    // 5. Generate PDF
     const texFile = path.join(__dirname, 'resume.tex');
     const pdfFile = path.join(__dirname, 'resume.pdf');
+    
+    fs.writeFileSync(texFile, generateLatex(optimizedProfile).replace(/\r\n/g, '\n').replace(/\r/g, '\n'), 'utf8');
 
-    fs.writeFileSync(
-      texFile,
-      generateLatex(data).replace(/\r\n/g, '\n').replace(/\r/g, '\n'),
-      'utf8'
-    );
+    exec(`/Library/TeX/texbin/pdflatex -interaction=nonstopmode -halt-on-error resume.tex`, { cwd: __dirname }, (err, stdout, stderr) => {
+      // Clean up aux files
+      ['resume.aux', 'resume.log', 'resume.tex', 'resume.out'].forEach(f => {
+        if (fs.existsSync(path.join(__dirname, f))) fs.unlinkSync(path.join(__dirname, f));
+      });
 
-    console.log('LaTeX file written at:', texFile);
-
-    exec(
-      `/Library/TeX/texbin/pdflatex -interaction=nonstopmode -halt-on-error resume.tex`,
-      { cwd: __dirname },
-      (err, stdout, stderr) => {
-        // Cleanup
-        ['resume.aux', 'resume.log', 'resume.tex', 'resume.out'].forEach((f) => {
-          const filePath = path.join(__dirname, f);
-          if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-        });
-
-        if (err) {
-          console.error('Latex error:', stdout);
-          return res.status(500).send('Resume generation failed!');
-        }
-
-        console.log('PDF generated successfully at', pdfFile);
-        return res.json({
-          message: 'Resume generated successfully!',
-          url: 'http://localhost:5005/resume',
-        });
+      if (err) {
+        console.error('Latex error:', stdout);
+        return res.status(500).send('Resume generation failed!');
       }
-    );
+      return res.json({ message: 'Resume generated!', url: 'http://localhost:5005/resume' });
+    });
+
   } catch (error) {
-    console.error('Error generating resume:', error);
+    // Detailed error logging for debugging
+    console.error('API Error Details:', JSON.stringify(error.response?.data || error.message, null, 2));
     res.status(500).send('Internal server error');
   }
 });
 
 app.post('/api/rank-experience', async (req, res) => {
   const { jobDescription, userId } = req.body;
-
-  if (!jobDescription || !userId)
-    return res.status(400).send('Missing jobDescription or userId');
-
-  if (!embedder)
-    return res.status(503).send('Embedding model is loading. Try again in a few seconds.');
+  if (!jobDescription || !userId) return res.status(400).send('Missing data');
+  if (!embedder) return res.status(503).send('Model loading');
 
   try {
     const snap = await db.collection('users').doc(userId).get();
     if (!snap.exists) return res.status(404).send('User not found');
+    
+    // Use the mapped profile to ensure we get 'description' correctly
+    const mapped = mapToApiSchema(snap.data());
+    const work = mapped.work || [];
 
-    const data = snap.data();
-    // Use Helper
-    const profile = findProfileData(data);
-    const work = profile.work || [];
-
-    // Embed the job description
     const jdVec = (await embedder(jobDescription))[0];
-
     const scored = [];
 
     for (const job of work) {
-      const responsibilities = job.description || job.responsibilities || [];
-      const text = `${job.title} ${job.company} ${responsibilities.join(' ')}`;
+      const text = `${job.title} ${job.company} ${(job.description || []).join(' ')}`;
       const jobVec = (await embedder(text))[0];
-
-      // cosine similarity
       const dot = jdVec.reduce((sum, v, i) => sum + v * jobVec[i], 0);
       const normA = Math.sqrt(jdVec.reduce((sum, v) => sum + v*v, 0));
       const normB = Math.sqrt(jobVec.reduce((sum, v) => sum + v*v, 0));
-      const similarity = dot / (normA * normB);
-
-      scored.push({ job, score: Number(similarity.toFixed(4)) });
+      scored.push({ job, score: Number((dot / (normA * normB)).toFixed(4)) });
     }
-
-    scored.sort((a, b) => b.score - a.score);
-
-    res.json(scored);
-  } catch (err) {
-    console.error('Ranking error:', err);
-    res.status(500).send('Error ranking experiences');
-  }
+    res.json(scored.sort((a, b) => b.score - a.score));
+  } catch (err) { console.error(err); res.status(500).send('Error ranking'); }
 });
 
 // serve generated PDF
 app.get('/resume', (req, res) => {
   const pdfPath = path.join(__dirname, 'resume.pdf');
-  if (fs.existsSync(pdfPath)) {
-    res.sendFile(pdfPath);
-  } else {
-    res.status(404).send('PDF not found');
-  }
+  if (fs.existsSync(pdfPath)) res.sendFile(pdfPath);
+  else res.status(404).send('PDF not found');
 });
 
-
-// get user info
 app.get('/user/:id', async (req, res) => {
-  try {
-    const uid = req.params.id;
-    const userRef = db.collection('users').doc(uid);
-    const user = await userRef.get();
-    if (user.exists) {
-      res.status(200).send(user.data());
-    } else {
-      res.status(404).send({ message: "This user does not exist" });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: "Error getting user" });
-  }
+  const user = await db.collection('users').doc(req.params.id).get();
+  user.exists ? res.send(user.data()) : res.status(404).send({message: "User not found"});
 });
 
-// create user
 app.post('/register', async (req, res) => {
-  try {
-    const userRef = db.collection('users').doc(req.body.id);
-    const newUser = {
-      email: req.body.email,
-      userProfile: {
-        profile: {
-            personal: {},
-            education: [],
-            work: [],
-            projects: [],
-            skills: []
-        }
-      }
-    };
-    await userRef.set(newUser);
-    res.status(201).send({ message: "Created user" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: "Error creating user" });
-  }
+  await db.collection('users').doc(req.body.id).set({
+    email: req.body.email,
+    profile: { personal: {}, education: [], work: [], projects: [], skills: [] }
+  });
+  res.status(201).send({ message: "Created user" });
 });
 
-// update profile
 app.put('/profile/:id', async (req, res) => {
-  try {
-    const uid = req.params.id;
-    const newProfile = req.body;
-    const userRef = db.collection('users').doc(uid);
-    await userRef.update({ userProfile: newProfile });
-    res.status(200).send({ message: "Updated profile" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: "Error updating profile" });
-  }
+  await db.collection('users').doc(req.params.id).update({ profile: req.body });
+  res.status(200).send({ message: "Updated" });
 });
 
-// starting the server
 app.listen(5005, () => console.log('Server running at http://localhost:5005'));
