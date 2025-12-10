@@ -48,7 +48,9 @@ function mapToApiSchema(dbData) {
     firstname: p.firstname || p.firstName || p['first name'] || "Jane",
     lastname: p.lastname || p.lastName || p['last name'] || "Doe",
     phone: p.phone || p.phoneNumber || "",
-    email: p.email || "no-email@example.com"
+    email: p.email || "no-email@example.com",
+    github: p.github || p.gitHub || null,
+    linkedin: p.linkedin || p.linkedIn || null
   };
 
   // 3. Map Work Items (Strictly map 'responsibilities' -> 'description')
@@ -96,8 +98,7 @@ function mapToApiSchema(dbData) {
     work,
     projects,
     education,
-    skills: raw.skills || [],
-    websites: raw.websites || []
+    skills: raw.skills || []
   };
 }
 
@@ -141,7 +142,9 @@ function generateLatex(data) {
 %----------HEADING----------
 \\begin{center}
     \\textbf{\\Huge \\scshape ${escapeLatex(personal.firstname)} ${escapeLatex(personal.lastname)}} \\\\ \\vspace{1pt}
-    \\small ${escapeLatex(personal.phone)} $|$ \\href{mailto:${escapeLatex(personal.email)}}{${escapeLatex(personal.email)}} 
+    \\small ${escapeLatex(personal.phone)} $|$ \\href{mailto:${escapeLatex(personal.email)}}{${escapeLatex(personal.email)}}   $|$ 
+    \\href{${escapeLatex(personal.linkedin)}}{${escapeLatex(personal.linkedin)}} $|$
+    \\href{${escapeLatex(personal.github)}}{${escapeLatex(personal.github)}}
 \\end{center}
 
 %-----------EDUCATION-----------
@@ -213,11 +216,11 @@ app.post('/api/generate', async (req, res) => {
 
     console.log("Sending clean payload to ranker...");
     
-    // 4. Send to External Python API
+    //  Send to External Python API
     const response = await axios.post("https://resume-ranker-340638164003.us-central1.run.app/", payload);
-    const optimizedProfile = response.data; // This will match the UserProfile model
+    const optimizedProfile = response.data; 
 
-    // 5. Generate PDF
+    //  Generate PDF
     const texFile = path.join(__dirname, 'resume.tex');
     const pdfFile = path.join(__dirname, 'resume.pdf');
     
@@ -243,33 +246,33 @@ app.post('/api/generate', async (req, res) => {
   }
 });
 
-app.post('/api/rank-experience', async (req, res) => {
-  const { jobDescription, userId } = req.body;
-  if (!jobDescription || !userId) return res.status(400).send('Missing data');
-  if (!embedder) return res.status(503).send('Model loading');
+// app.post('/api/rank-experience', async (req, res) => {
+//   const { jobDescription, userId } = req.body;
+//   if (!jobDescription || !userId) return res.status(400).send('Missing data');
+//   if (!embedder) return res.status(503).send('Model loading');
 
-  try {
-    const snap = await db.collection('users').doc(userId).get();
-    if (!snap.exists) return res.status(404).send('User not found');
+//   try {
+//     const snap = await db.collection('users').doc(userId).get();
+//     if (!snap.exists) return res.status(404).send('User not found');
     
-    // Use the mapped profile to ensure we get 'description' correctly
-    const mapped = mapToApiSchema(snap.data());
-    const work = mapped.work || [];
+//     // Use the mapped profile to ensure we get 'description' correctly
+//     const mapped = mapToApiSchema(snap.data());
+//     const work = mapped.work || [];
 
-    const jdVec = (await embedder(jobDescription))[0];
-    const scored = [];
+//     const jdVec = (await embedder(jobDescription))[0];
+//     const scored = [];
 
-    for (const job of work) {
-      const text = `${job.title} ${job.company} ${(job.description || []).join(' ')}`;
-      const jobVec = (await embedder(text))[0];
-      const dot = jdVec.reduce((sum, v, i) => sum + v * jobVec[i], 0);
-      const normA = Math.sqrt(jdVec.reduce((sum, v) => sum + v*v, 0));
-      const normB = Math.sqrt(jobVec.reduce((sum, v) => sum + v*v, 0));
-      scored.push({ job, score: Number((dot / (normA * normB)).toFixed(4)) });
-    }
-    res.json(scored.sort((a, b) => b.score - a.score));
-  } catch (err) { console.error(err); res.status(500).send('Error ranking'); }
-});
+//     for (const job of work) {
+//       const text = `${job.title} ${job.company} ${(job.description || []).join(' ')}`;
+//       const jobVec = (await embedder(text))[0];
+//       const dot = jdVec.reduce((sum, v, i) => sum + v * jobVec[i], 0);
+//       const normA = Math.sqrt(jdVec.reduce((sum, v) => sum + v*v, 0));
+//       const normB = Math.sqrt(jobVec.reduce((sum, v) => sum + v*v, 0));
+//       scored.push({ job, score: Number((dot / (normA * normB)).toFixed(4)) });
+//     }
+//     res.json(scored.sort((a, b) => b.score - a.score));
+//   } catch (err) { console.error(err); res.status(500).send('Error ranking'); }
+// });
 
 // serve generated PDF
 app.get('/resume', (req, res) => {

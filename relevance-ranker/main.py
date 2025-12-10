@@ -8,6 +8,8 @@ class PersonalInfo(BaseModel):
     lastname: str
     phone: Optional[str] = None
     email: str
+    github:Optional[str] =None,
+    linkedin:Optional[str] =None
 
 class EducationItem(BaseModel):
     institution: str
@@ -39,7 +41,6 @@ class UserProfile(BaseModel):
     projects: List[ProjectItem] = [] 
     education: List[EducationItem] = []
     skills: List[str] = [] 
-    websites: List[str] = []
 
 class NewJob(BaseModel):
     title:str
