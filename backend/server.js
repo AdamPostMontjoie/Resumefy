@@ -1,406 +1,302 @@
-// backend/server.js
-
-// === IMPORTS ===
+require('dotenv').config();
 const express = require('express');
+const { exec } = require('child_process');
+const fs = require('fs');
+const { pipeline } = require('@xenova/transformers');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');
-const { db } = require('./firebase.js');
-console.log('DEBUG: db object loaded:', db);
-console.log('DEBUG: db.collection type:', typeof db.collection);
-const puppeteer = require('puppeteer');
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-const { z } = require('zod');
+const admin = require('firebase-admin');
+const axios = require('axios');
 
-// === CONFIG ===
+// sentence transformer (kept for local ranking endpoint if needed)
+let embedder;
+(async () => {
+  embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+  console.log('Embedding model loaded');
+})();
+
 const app = express();
-const PORT = 5005;
-const FILES_DIR = path.join(__dirname, 'files');
-if (!fs.existsSync(FILES_DIR)) fs.mkdirSync(FILES_DIR); 
-
-app.use(cors());
 app.use(express.json());
-app.use('/files', express.static(FILES_DIR)); // serve generated PDFs
+app.use(cors());
 
-// === BASIC ROUTES ===
-app.get('/', (req, res) => res.send('Backend is running!'));
+const serviceAccount = {
+  type: process.env.FIREBASE_TYPE,
+  project_id: process.env.FIREBASE_PROJECT_ID,
+  private_key: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
+  client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  client_id: process.env.FIREBASE_CLIENT_ID,
+  auth_uri: process.env.FIREBASE_AUTH_URI,
+  token_uri: process.env.FIREBASE_TOKEN_URI,
+  auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
+  client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
+};
 
-// get user info
-app.get('/user/:id', async (req, res) => {
-  try {
-    const uid = req.params.id;
-    const userRef = db.collection('users').doc(uid);
-    const user = await userRef.get();
-    if (user.exists) {
-      res.status(200).send(user.data());
-    } else {
-      res.status(404).send({ message: "This user does not exist" });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: "Error getting user" });
-  }
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
 });
 
-// create user
-app.post('/register', async (req, res) => {
-  try {
-    const userRef = db.collection('users').doc(req.body.id);
-    const newUser = {
-      email: req.body.email,
-      profile: {
-        Summary: "",
-        certifications: [],
-        education: {},
-        personal: {},
-        skills: [],
-        websites: [],
-        work: []
-      }
-    };
-    await userRef.set(newUser);
-    res.status(201).send({ message: "Created user" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: "Error creating user" });
+const db = admin.firestore();
+
+// === HELPER: Map DB Data to Strict Python API Schema ===
+function mapToApiSchema(dbData) {
+  // 1. Find the raw profile object (handling nesting)
+  const raw = dbData.profile || dbData.userProfile?.profile || dbData;
+
+  // 2. Map Personal Info
+  const p = raw.personal || {};
+  const personal = {
+    firstname: p.firstname || p.firstName || p['first name'] || "Jane",
+    lastname: p.lastname || p.lastName || p['last name'] || "Doe",
+    phone: p.phone || p.phoneNumber || "",
+    email: p.email || "no-email@example.com",
+    github: p.github || p.gitHub || null,
+    linkedin: p.linkedin || p.linkedIn || null
+  };
+
+  // 3. Map Work Items (Strictly map 'responsibilities' -> 'description')
+  const work = (raw.work || []).map(w => ({
+    title: w.title || "Untitled",
+    company: w.company || "Unknown",
+    startDate: w.startDate || w.beginningdate || "",
+    endDate: w.endDate || w.endingdate || "",
+    location: w.location || "",
+    // Python model expects List[str] called 'description'
+    description: Array.isArray(w.description) ? w.description : (w.responsibilities || [])
+  }));
+
+  // 4. Map Project Items (Strictly map 'stack' -> 'tools', 'details' -> 'descriptions')
+  let rawProjects = [];
+  if (Array.isArray(raw.projects)) {
+    rawProjects = raw.projects;
+  } else if (raw.projects && typeof raw.projects === 'object') {
+    rawProjects = Object.keys(raw.projects).map(k => ({ title: k, ...raw.projects[k] }));
   }
-});
 
-// update profile
-app.put('/profile/:id', async (req, res) => {
-  try {
-    const uid = req.params.id;
-    const newProfile = req.body;
-    const userRef = db.collection('users').doc(uid);
-    await userRef.update({ profile: newProfile });
-    res.status(200).send({ message: "Updated profile" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: "Error updating profile" });
-  }
-});
+  const projects = rawProjects.map(proj => ({
+    title: proj.title || "Untitled",
+    startDate: proj.startDate || proj.beginningdate || "",
+    endDate: proj.endDate || proj.endingdate || "",
+    // Python model expects List[str] called 'tools'
+    tools: Array.isArray(proj.tools) ? proj.tools : (proj.stack || []),
+    // Python model expects List[str] called 'descriptions' (PLURAL)
+    descriptions: Array.isArray(proj.descriptions) ? proj.descriptions : (proj.details || [])
+  }));
 
-// === OPENROUTER + MISTRAL ===
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+  // 5. Map Education
+  const education = (raw.education || []).map(edu => ({
+    institution: edu.institution || edu.school || "Unknown",
+    startDate: edu.startDate || "",
+    endDate: edu.endDate || "",
+    major: edu.major || "",
+    minor: edu.minor || "",
+    degree: edu.degree || "",
+    location: edu.location || ""
+  }));
 
-async function chatOnce(messages) {
-  const res = await fetch(OPENROUTER_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      'HTTP-Referer': process.env.APP_URL || '',
-      'X-Title': process.env.APP_NAME || '',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'mistralai/mistral-7b-instruct:free',
-      messages,
-      temperature: 0.3,
-      max_tokens: 16000
-    })
-  });
-  const json = await res.json();
-  return json?.choices?.[0]?.message?.content ?? '';
-}
-
-const GENERATE_SYS = `You are a professional resume writer. Generate a tailored resume by selecting and highlighting the most relevant information from the user's profile based on the job description.
-
-INSTRUCTIONS:
-1. Extract work experience from the user's profile.work array and create detailed bullet points for each relevant position
-2. Select skills from profile.skills that match the job requirements
-3. Use the user's education from profile.education
-4. Create a compelling summary that connects their background to the job
-5. Use active voice, no first-person pronouns
-6. Each experience bullet should be specific and achievement-focused
-7. Include at least 5-8 experience bullet points from the user's work history
-8. Tailor everything to match the job description
-
-Return ONLY a valid JSON object with this exact structure:
-{
-  "summary": "A 2-3 sentence professional summary",
-  "skills": ["skill1", "skill2", "skill3", "skill4", "skill5"],
-  "experience_bullets": ["Detailed bullet point 1", "Detailed bullet point 2", "Detailed bullet point 3"],
-  "education": [{"degree": "Degree Name", "institution": "School Name", "year": "Year"}]
-}
-
-Do NOT include markdown, explanations, or any text outside the JSON object.`;
-
-async function resumeGeneration(jobDescription, jobResponsibilities, userProfile) {
-  // Create a more structured prompt with clear formatting
-  const prompt = `JOB DESCRIPTION:
-${jobDescription}
-
-JOB RESPONSIBILITIES:
-${jobResponsibilities}
-
-USER PROFILE DATA:
-Name: ${userProfile.personal?.name || 'Not provided'}
-Email: ${userProfile.personal?.email || 'Not provided'}
-Summary: ${userProfile.Summary || 'Not provided'}
-
-Skills: ${JSON.stringify(userProfile.skills || [])}
-
-Work Experience: ${JSON.stringify(userProfile.work || [])}
-
-Education: ${JSON.stringify(userProfile.education || {})}
-
-Certifications: ${JSON.stringify(userProfile.certifications || [])}
-
-Now generate a tailored resume in valid JSON format.`;
-
-  console.log('Sending request to AI...');
-  const out = await chatOnce([
-    { role: 'system', content: GENERATE_SYS },
-    { role: 'user', content: prompt }
-  ]);
-
-  console.log('AI Response:', out.substring(0, 500)); // Log first 500 chars
-
-  try {
-    // Try to parse the response
-    const cleaned = out.trim();
-    let parsed = JSON.parse(cleaned);
-    
-    // Validate the response has content
-    if (!parsed.summary || parsed.summary.length < 10) {
-      console.warn('Warning: Summary too short or missing');
-    }
-    if (!parsed.experience_bullets || parsed.experience_bullets.length === 0) {
-      console.warn('Warning: No experience bullets generated');
-    }
-    
-    return parsed;
-  } catch (e) {
-    console.warn('Model returned invalid JSON. Attempting to fix.', e.message);
-    
-    // Try to extract JSON from the response
-    const jsonMatch = out.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      try {
-        return JSON.parse(jsonMatch[0]);
-      } catch (e2) {
-        console.error('Failed to parse extracted JSON');
-      }
-    }
-    
-    // Fallback: create a basic resume from the profile data
-    console.log('Using fallback resume generation');
-    return createFallbackResume(userProfile, jobDescription);
-  }
-}
-
-// Fallback function to create a basic resume if AI fails
-function createFallbackResume(profile, jobDescription) {
-  const skills = profile.skills || [];
-  const workExperience = profile.work || [];
-  const education = profile.education || {};
-  
-  // Create experience bullets from work history
-  const experienceBullets = [];
-  workExperience.forEach(job => {
-    if (job.title) {
-      experienceBullets.push(`${job.title} at ${job.company || 'Company'} - ${job.description || 'Contributed to team success'}`);
-    }
-    if (job.responsibilities && Array.isArray(job.responsibilities)) {
-      experienceBullets.push(...job.responsibilities);
-    }
-  });
-  
-  // Create education array
-  const educationArray = [];
-  if (education.degree) {
-    educationArray.push({
-      degree: education.degree,
-      institution: education.institution || education.school || 'University',
-      year: education.year || education.graduationYear || 'N/A'
-    });
-  }
-  
   return {
-    summary: profile.Summary || `Experienced professional seeking position in ${jobDescription.substring(0, 50)}...`,
-    skills: skills.slice(0, 10),
-    experience_bullets: experienceBullets.length > 0 ? experienceBullets : ['Experienced professional with relevant background'],
-    education: educationArray
+    personal,
+    work,
+    projects,
+    education,
+    skills: raw.skills || []
   };
 }
 
-// === PDF GENERATION ===
-function escapeHTML(s) {
-  return String(s || '').replace(/[&<>"']/g, c =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
+// === LATEX GENERATOR ===
+// Uses the standardized output from the Python API
+function generateLatex(data) {
+  const escapeLatex = (str) => typeof str === 'string' ? str.replace(/([#\$%&_\{\}\\])/g, '\\$1') : '';
 
-function resumeHTML(profile, resumeData) {
-  const bulletsHTML = (resumeData.experience_bullets || [])
-    .map(b => `<li>${escapeHTML(b)}</li>`)
-    .join('');
+  const personal = data.personal || {};
+  const education = data.education || [];
+  const work = data.work || [];
+  const projects = data.projects || [];
+  const skills = data.skills || [];
+  const skillsString = skills.map(s => escapeLatex(s)).join(', ');
 
-  const skillsHTML = (resumeData.skills || [])
-    .map(s => `<span style="margin-right:8px;">• ${escapeHTML(s)}</span>`)
-    .join('');
+  let latex = `
+\\documentclass[letterpaper,11pt]{article}
+\\usepackage[margin=1in]{geometry}
+\\usepackage[hidelinks]{hyperref}
+\\usepackage{titlesec}
+\\usepackage{enumitem}
+\\usepackage[english]{babel}
+\\usepackage[T1]{fontenc}
+\\usepackage{lmodern}
+\\usepackage{setspace}
+\\setstretch{0.95}
 
-  const eduHTML = (resumeData.education || [])
-    .map(e => `<div style="margin-bottom: 8px;">
-      <strong>${escapeHTML(e.degree)}</strong> – ${escapeHTML(e.institution)} 
-      <span style="color: #666;">(${escapeHTML(e.year)})</span>
-    </div>`)
-    .join('');
+\\setlength{\\tabcolsep}{0pt}
+\\raggedright
+\\raggedbottom
 
-  // Add certifications if available
-  const certHTML = (profile.certifications || [])
-    .map(cert => `<li>${escapeHTML(typeof cert === 'string' ? cert : cert.name || '')}</li>`)
-    .join('');
-  const certSection = certHTML ? `<h2>Certifications</h2><ul>${certHTML}</ul>` : '';
+\\usepackage{titlesec}
+\\titleformat{\\section}{\\vspace{-4pt}\\scshape\\large}{}{0em}{}[\\vspace{1pt}\\titlerule]
 
-  return `<!doctype html>
-  <html><head><meta charset="utf-8"><style>
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif; 
-      color: #222; 
-      padding: 40px; 
-      line-height: 1.6;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    h1 { 
-      font-size: 28px; 
-      margin-bottom: 8px; 
-      color: #1a1a1a;
-      font-weight: 600;
-    }
-    h2 { 
-      font-size: 18px; 
-      margin-top: 28px; 
-      margin-bottom: 12px; 
-      color: #2c3e50;
-      border-bottom: 2px solid #3498db;
-      padding-bottom: 4px;
-      font-weight: 600;
-    }
-    .contact-info {
-      color: #555;
-      margin-bottom: 24px;
-      font-size: 14px;
-    }
-    ul { 
-      margin-top: 8px; 
-      padding-left: 20px; 
-    }
-    li { 
-      margin-bottom: 8px; 
-      line-height: 1.5;
-    }
-    .skills {
-      line-height: 1.8;
-    }
-    .skills span { 
-      display: inline-block;
-      background: #f0f0f0;
-      padding: 4px 12px;
-      border-radius: 4px;
-      margin: 4px 4px 4px 0;
-      font-size: 14px;
-    }
-    p {
-      margin: 8px 0;
-      line-height: 1.6;
-    }
-  </style></head>
-  <body>
-    <h1>${escapeHTML(profile.personal?.name || 'Professional Resume')}</h1>
-    <div class="contact-info">
-      ${escapeHTML(profile.personal?.email || '')}
-      ${profile.personal?.phone ? ' • ' + escapeHTML(profile.personal.phone) : ''}
-      ${profile.personal?.location ? ' • ' + escapeHTML(profile.personal.location) : ''}
-    </div>
-    
-    <h2>Professional Summary</h2>
-    <p>${escapeHTML(resumeData.summary || '')}</p>
-    
-    <h2>Skills</h2>
-    <div class="skills">${skillsHTML || '<p>Skills to be added</p>'}</div>
-    
-    <h2>Professional Experience</h2>
-    <ul>${bulletsHTML || '<li>Experience details to be added</li>'}</ul>
-    
-    ${certSection}
-    
-    <h2>Education</h2>
-    ${eduHTML || '<p>Education details to be added</p>'}
-  </body></html>`;
-}
+\\pdfgentounicode=1 
+\\newcommand{\\resumeItem}[1]{ \\item\\small{ {#1 \\vspace{-2pt}} } }
 
-async function renderPDF(profile, resumeData) {
-  const html = resumeHTML(profile, resumeData);
-  const filename = `resume-${Date.now()}.pdf`;
-  const outPath = path.join(FILES_DIR, filename);
+\\begin{document}
+\\pagestyle{empty}
 
-  const browser = await puppeteer.launch({ 
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+%----------HEADING----------
+\\begin{center}
+    \\textbf{\\Huge \\scshape ${escapeLatex(personal.firstname)} ${escapeLatex(personal.lastname)}} \\\\ \\vspace{1pt}
+    \\small ${escapeLatex(personal.phone)} $|$ \\href{mailto:${escapeLatex(personal.email)}}{${escapeLatex(personal.email)}}   $|$ 
+    \\href{${escapeLatex(personal.linkedin)}}{${escapeLatex(personal.linkedin)}} $|$
+    \\href{${escapeLatex(personal.github)}}{${escapeLatex(personal.github)}}
+\\end{center}
+
+%-----------EDUCATION-----------
+\\section{Education}
+`;
+
+  education.forEach((ed) => {
+    latex += `
+\\hspace{0.3cm} \\textbf{${escapeLatex(ed.institution)}} \\hfill ${escapeLatex(ed.location)} \\\\
+\\hspace{0.3cm} \\textit{${escapeLatex(ed.degree)} ${ed.major ? 'in ' + escapeLatex(ed.major) : ''}} \\hfill ${escapeLatex(ed.startDate)} - ${escapeLatex(ed.endDate)}
+`;
   });
-  const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'networkidle0' });
-  await page.pdf({
-    path: outPath,
-    format: 'Letter',
-    printBackground: true,
-    margin: { top: '0.5in', bottom: '0.5in', left: '0.75in', right: '0.75in' }
+
+  latex += `\\section{Experience}`;
+  work.forEach((job) => {
+    latex += `
+\\hspace{0.3cm} \\textbf{${escapeLatex(job.title)}} \\hfill ${escapeLatex(job.startDate)} - ${escapeLatex(job.endDate)} \\\\
+\\hspace{0.3cm} \\textit{${escapeLatex(job.company)}} \\hfill \\textit{${escapeLatex(job.location)}} 
+\\hspace{0.3cm}\\begin{itemize}[leftmargin=0.4in, label={$\\vcenter{\\hbox{\\tiny$\\bullet$}}$}, itemsep=0pt] 
+`;
+    // Python model guarantees 'description' is the list key
+    (job.description || []).forEach(item => latex += `  \\item \\small{${escapeLatex(item)}}\n`);
+    latex += `\\end{itemize}`;
   });
-  await browser.close();
-  
-  console.log(`PDF generated: ${filename}`);
-  return filename;
+
+  latex += `\\section{Projects}`;
+  projects.forEach((proj) => {
+    // Python model guarantees 'tools' and 'descriptions' keys
+    const stack = (proj.tools || []).join(', ');
+    latex += `
+\\hspace{0.3cm}\\vspace{0pt}\\textbf{${escapeLatex(proj.title)}} $|$ \\textit{${escapeLatex(stack)}} \\hfill ${escapeLatex(proj.startDate)} - ${escapeLatex(proj.endDate)}
+\\hspace{0.3cm}\\begin{itemize}[leftmargin=0.4in, label={$\\vcenter{\\hbox{\\tiny$\\bullet$}}$}, itemsep=0pt]
+`;
+    (proj.descriptions || []).forEach(d => latex += `  \\item \\small{${escapeLatex(d)}}\n`);
+    latex += `\\end{itemize}`;
+  });
+
+  latex += `\\section{Skills}
+\\begin{itemize}[leftmargin=0.2in, label={}, itemsep=0pt]
+\\item[] \\small{${skillsString}}
+\\end{itemize}
+\\end{document}
+`;
+  return latex;
 }
 
-// === /api/generate ENDPOINT ===
-const GenerateSchema = z.object({
-  userId: z.string(),
-  jobDescription: z.string().min(10, "Job description must be at least 10 characters"),
-  jobResponsibilities: z.string().min(10, "Job responsibilities must be at least 10 characters")
-});
-
+// === API ROUTES ===
 app.post('/api/generate', async (req, res) => {
+  const { userId, title, description } = req.body;
+  if (!userId) return res.status(400).send('Missing userId');
+
   try {
-    console.log('Received generation request');
-    const { userId, jobDescription, jobResponsibilities } = GenerateSchema.parse(req.body);
-
-    // 1. Get user profile
-    const userRef = db.collection('users').doc(userId);
-    const snap = await userRef.get();
-    if (!snap.exists) {
-      console.error('User not found:', userId);
-      return res.status(404).json({ error: 'User not found' });
-    }
-    const profile = snap.data().profile;
-    console.log('User profile loaded');
-
-    // 2. Generate resume
-    console.log('Generating resume content...');
-    const genResume = await resumeGeneration(jobDescription, jobResponsibilities, profile);
-    console.log('Resume content generated');
-    console.log('Generated resume data:', JSON.stringify(genResume, null, 2));
-
-    // 3. Render PDF
-    console.log('Rendering PDF...');
-    const filename = await renderPDF(profile, genResume);
-
-    // 4. Return result
-    const response = {
-      pdfUrl: `http://localhost:${PORT}/files/${filename}`,
-      rawResume: genResume
+    // 1. Fetch from Firebase
+    const snap = await db.collection('users').doc(userId).get();
+    if (!snap.exists) return res.status(404).send('User not found');
+    const docData = snap.data();
+    
+    // 2. Map to Strict Python API Schema
+    const mappedProfile = mapToApiSchema(docData);
+    
+    // 3. Prepare Payload (Strict Snake_Case keys as per FastAPI signature)
+    const payload = {
+      user_profile: mappedProfile,
+      new_job: {
+        title: title,
+        description: description
+      }
     };
-    console.log('Resume generation complete');
-    res.json(response);
-  } catch (e) {
-    console.error('Error in /api/generate:', e);
-    if (e.errors) {
-      // Zod validation error
-      return res.status(400).json({ error: 'Validation error', details: e.errors });
-    }
-    res.status(500).json({ error: e.message || 'Resume generation failed' });
+
+    console.log("Sending clean payload to ranker...");
+    
+    //  Send to External Python API
+    const response = await axios.post("https://resume-ranker-340638164003.us-central1.run.app/", payload);
+    const optimizedProfile = response.data; 
+
+    //  Generate PDF
+    const texFile = path.join(__dirname, 'resume.tex');
+    const pdfFile = path.join(__dirname, 'resume.pdf');
+    
+    fs.writeFileSync(texFile, generateLatex(optimizedProfile).replace(/\r\n/g, '\n').replace(/\r/g, '\n'), 'utf8');
+
+    exec(`/Library/TeX/texbin/pdflatex -interaction=nonstopmode -halt-on-error resume.tex`, { cwd: __dirname }, (err, stdout, stderr) => {
+      // Clean up aux files
+      ['resume.aux', 'resume.log', 'resume.tex', 'resume.out'].forEach(f => {
+        if (fs.existsSync(path.join(__dirname, f))) fs.unlinkSync(path.join(__dirname, f));
+      });
+
+      if (err) {
+        console.error('Latex error:', stdout);
+        return res.status(500).send('Resume generation failed!');
+      }
+      return res.json({ message: 'Resume generated!', url: 'http://localhost:5005/resume' });
+    });
+
+  } catch (error) {
+    // Detailed error logging for debugging
+    console.error('API Error Details:', JSON.stringify(error.response?.data || error.message, null, 2));
+    res.status(500).send('Internal server error');
   }
 });
 
-// === START SERVER ===
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// app.post('/api/rank-experience', async (req, res) => {
+//   const { jobDescription, userId } = req.body;
+//   if (!jobDescription || !userId) return res.status(400).send('Missing data');
+//   if (!embedder) return res.status(503).send('Model loading');
+
+//   try {
+//     const snap = await db.collection('users').doc(userId).get();
+//     if (!snap.exists) return res.status(404).send('User not found');
+    
+//     // Use the mapped profile to ensure we get 'description' correctly
+//     const mapped = mapToApiSchema(snap.data());
+//     const work = mapped.work || [];
+
+//     const jdVec = (await embedder(jobDescription))[0];
+//     const scored = [];
+
+//     for (const job of work) {
+//       const text = `${job.title} ${job.company} ${(job.description || []).join(' ')}`;
+//       const jobVec = (await embedder(text))[0];
+//       const dot = jdVec.reduce((sum, v, i) => sum + v * jobVec[i], 0);
+//       const normA = Math.sqrt(jdVec.reduce((sum, v) => sum + v*v, 0));
+//       const normB = Math.sqrt(jobVec.reduce((sum, v) => sum + v*v, 0));
+//       scored.push({ job, score: Number((dot / (normA * normB)).toFixed(4)) });
+//     }
+//     res.json(scored.sort((a, b) => b.score - a.score));
+//   } catch (err) { console.error(err); res.status(500).send('Error ranking'); }
+// });
+
+// serve generated PDF
+app.get('/resume', (req, res) => {
+  const pdfPath = path.join(__dirname, 'resume.pdf');
+  if (fs.existsSync(pdfPath)) res.sendFile(pdfPath);
+  else res.status(404).send('PDF not found');
+});
+
+app.get('/user/:id', async (req, res) => {
+  const user = await db.collection('users').doc(req.params.id).get();
+  user.exists ? res.send(user.data()) : res.status(404).send({message: "User not found"});
+});
+
+app.post('/register', async (req, res) => {
+  await db.collection('users').doc(req.body.id).set({
+    email: req.body.email,
+    profile: { personal: {}, education: [], work: [], projects: [], skills: [] }
+  });
+  res.status(201).send({ message: "Created user" });
+});
+
+app.put('/profile/:id', async (req, res) => {
+  await db.collection('users').doc(req.params.id).update({ profile: req.body });
+  res.status(200).send({ message: "Updated" });
+});
+
+app.listen(5005, () => console.log('Server running at http://localhost:5005'));
