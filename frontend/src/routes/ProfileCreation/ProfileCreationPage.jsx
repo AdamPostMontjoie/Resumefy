@@ -692,16 +692,6 @@ const ProfileCreationPage = () => {
           <button type="button" onClick={addSkill} className="add-button">Add Skill</button>
         </CollapsibleSection>
 
-        <CollapsibleSection title="Websites / Links" expandAllTrigger={expandAllTrigger}>
-          {websites.map((url, i) => (
-            <div key={i} className="list-item-container">
-              <input placeholder="Website or Portfolio URL" value={url} onChange={(e) => handleWebsiteChange(i, e)} className="input input-flex" required/>
-              <button type="button" onClick={() => removeWebsite(i)} className="remove-button">Remove</button>
-            </div>
-          ))}
-          <button type="button" onClick={addWebsite} className="add-button">Add Website</button>
-          
-        </CollapsibleSection>
         <button type="submit" className="submit-button">Submit Profile</button>
       </form>
     </div>
