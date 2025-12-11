@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
 import { doSignOut } from "../../auth/auth";
 import "./ResumeGeneration.css";
-import axios from "axios";
+//import axios from "axios";
 
 function ResumeGenerationPage() {
   const { userLoggedIn, loading, currentUser } = useAuth();
@@ -31,38 +31,40 @@ function ResumeGenerationPage() {
 
   const handleGenerate = async () => {
     if (!jobDesc.trim() || !jobResp.trim()) {
-      alert("Please paste a job description and responsibilities.");
+      alert("Please paste a job description and title.");
       return;
     }
-
+  
     try {
       setIsGenerating(true);
       setPdfUrl("");
       setShowPdf(false);
-
+  
       const userId = currentUser?.uid;
-      const userProfile = await axios.get(`http://localhost:5005/user/${currentUser.uid}`)
+  
+      // POST request aligned with backend
       const response = await fetch("http://localhost:5005/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userProfile: userProfile.data,
-          jobDescription: jobDesc,
-          jobTitle: jobResp,
+          userId: userId,
+          title: jobResp,
+          description: jobDesc,
         }),
       });
-
+  
       if (!response.ok) {
-        const err = await response.json();
-        alert("Resume generation failed: " + (err.error || response.statusText));
+        const err = await response.text();
+        alert("Resume generation failed: " + err);
         setIsGenerating(false);
         return;
       }
-
+  
       const data = await response.json();
-
-      if (data.pdfUrl) {
-        setPdfUrl(data.pdfUrl);
+  
+      if (data.url) {
+        setPdfUrl(data.url);
+        setShowPdf(true); // automatically show PDF
       } else {
         alert("No PDF returned from the server.");
       }
@@ -73,6 +75,7 @@ function ResumeGenerationPage() {
       setIsGenerating(false);
     }
   };
+  
 
 return (
   <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #F7EBDF 0%, #EEEEF0 100%)" }}>
