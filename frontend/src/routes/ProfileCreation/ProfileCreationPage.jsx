@@ -76,10 +76,12 @@ const ProfileCreationPage = () => {
     lastname:"",
     email: "",
     phone: "",
+    linkedin: "",
+    github: ""
   });
 
   const [education, setEducation] = useState([
-    { institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", gpa: "" },
+    { institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", location: ""},
   ]);
   const [workExperience, setWorkExperience] = useState([
     { title: "", company: "", startDate: "", endDate:"", description: [""], location: "" },
@@ -88,7 +90,6 @@ const ProfileCreationPage = () => {
     { title: "", tools: [""], startDate: "", endDate:"", descriptions: [""] },
   ]);
   const [skills, setSkills] = useState([""]);
-  const [websites, setWebsites] = useState([""]);
 
   const [expandAllTrigger, setExpandAllTrigger] = useState(false);
   const navigate = useNavigate();
@@ -121,7 +122,7 @@ const ProfileCreationPage = () => {
           setEducation(
             profile.education && profile.education.length > 0 
               ? profile.education 
-              : [{ institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", gpa: "" }]
+              : [{ institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", location: ""}]
           );
           setWorkExperience(
             profile.work && profile.work.length > 0 
@@ -138,11 +139,6 @@ const ProfileCreationPage = () => {
               ? profile.skills 
               : [""]
           );  
-          setWebsites(
-            profile.websites && profile.websites.length > 0 
-              ? profile.websites 
-              : [""]
-          );
         } catch (error) {
           console.log(error)
         }  
@@ -203,11 +199,6 @@ const ProfileCreationPage = () => {
     updated[i] = e.target.value;
     setSkills(updated);
   };
-  const handleWebsiteChange = (i, e) => {
-    const updated = [...websites];
-    updated[i] = e.target.value;
-    setWebsites(updated);
-  };
 
   const [EduisChecked, EdusetIsChecked] = useState(false);
   const [ExpisChecked, ExpsetIsChecked] = useState(false);
@@ -218,7 +209,7 @@ const ProfileCreationPage = () => {
   // Add/remove
   const addEducation = () => {
     const today = new Date().toISOString().split('T')[0];
-    setEducation([...education, { institution: "", dates: today, major: "", minor: "", degree: "", gpa: "" }]);
+    setEducation([...education, { institution: "", dates: today, major: "", minor: "", degree: "", location: ""}]);
   };
   const removeEducation = (i) => setEducation(education.filter((_, x) => x !== i));
   const addWork = () => {
@@ -263,8 +254,6 @@ const ProfileCreationPage = () => {
   };
   const addSkill = () => setSkills([...skills, ""]);
   const removeSkill = (i) => setSkills(skills.filter((_, x) => x !== i));
-  const addWebsite = () => setWebsites([...websites, ""]);
-  const removeWebsite = (i) => setWebsites(websites.filter((_, x) => x !== i));
 
 
   const handleSubmit = async (e) => {
@@ -279,12 +268,13 @@ const ProfileCreationPage = () => {
               firstname: personalInfo.firstname,
               lastname:personalInfo.lastname,
               phone:personalInfo.phone,
+              linkedin:personalInfo.linkedin,
+              github:personalInfo.github
             },
             work:workExperience,
-            project:projects,
+            projects:projects,
             education:education,
             skills:skills,
-            websites:websites
         }
         await axios.put(`http://localhost:5005/profile/${currentUser.uid}`, body)
         alert("updated profile")
@@ -343,6 +333,14 @@ const ProfileCreationPage = () => {
             </div>
             <div className="required">
               <input maxLength={10} type="number" name="phone" placeholder="Phone (numbers only)" value={personalInfo.phone} onChange={handlePersonalChange} className="input input-half" />
+            </div>
+            <div className="required">
+              <input  name="linkdin" placeholder="linkdin" value={personalInfo.linkedin} onChange={handlePersonalChange} className="input input-half" required />
+              <span className="asterisk">*</span>
+            </div>
+            <div className="required">
+              <input  name="github" placeholder="github" value={personalInfo.github} onChange={handlePersonalChange} className="input input-half" required />
+              <span className="asterisk">*</span>
             </div>
           </div>
         </CollapsibleSection>
@@ -493,6 +491,10 @@ const ProfileCreationPage = () => {
                   ))}
                 </select>
                 <span className="asterisk">*</span>
+                </div>
+                <div className="required">
+                  <input  name="location" placeholder="location" value={edu.github} onChange={handleEducationChange} className="input input-half" required />
+                  <span className="asterisk">*</span>
                 </div>
               </div>
               {/* <input type="number" name="gpa" placeholder="GPA" value={edu.gpa} onChange={(e) => handleEducationChange(index, e)} className="input input-half" /> */}
@@ -688,20 +690,6 @@ const ProfileCreationPage = () => {
             </div>
           ))}
           <button type="button" onClick={addSkill} className="add-button">Add Skill</button>
-        </CollapsibleSection>
-          {/*Certs */}
-        <CollapsibleSection title="Certifications" expandAllTrigger={expandAllTrigger}>
-          {certifications.map((cert, i) => (
-            <div key={i} className="list-item-container">
-              <input placeholder="Certification name" value={cert} onChange={(e) => handleCertChange(i, e)} className="input input-flex" required/>
-              <button type="button" onClick={() => removeCert(i)} className="remove-button">Remove</button>
-              <span className="asterisk">*</span>
-            </div>
-            
-          ))}
-          <button type="button" onClick={addCert} className="add-button">Add Certification</button>
-          
-          
         </CollapsibleSection>
 
         <CollapsibleSection title="Websites / Links" expandAllTrigger={expandAllTrigger}>

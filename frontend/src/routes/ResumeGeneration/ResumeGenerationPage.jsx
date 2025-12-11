@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
 import { doSignOut } from "../../auth/auth";
 import "./ResumeGeneration.css";
+import axios from "axios";
 
 function ResumeGenerationPage() {
   const { userLoggedIn, loading, currentUser } = useAuth();
@@ -40,14 +41,14 @@ function ResumeGenerationPage() {
       setShowPdf(false);
 
       const userId = currentUser?.uid;
-
+      const userProfile = await axios.get(`http://localhost:5005/user/${currentUser.uid}`)
       const response = await fetch("http://localhost:5005/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId,
+          userProfile: userProfile.data,
           jobDescription: jobDesc,
-          jobResponsibilities: jobResp,
+          jobTitle: jobResp,
         }),
       });
 
