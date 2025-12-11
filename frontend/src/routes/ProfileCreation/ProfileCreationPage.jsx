@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from 'axios'
 import { useAuth } from "../../auth/useAuth";
-import "./ProfileCreation.css"; 
+import "./ProfileCreation.css";
 import Select from 'react-select'
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -14,15 +14,12 @@ import logo from "../../assets/logo.png";
 
 const CollapsibleSection = ({ title, children, expandAllTrigger }) => {
   const [open, setOpen] = useState(true);
-  
 
   useEffect(() => {
     if (expandAllTrigger) setOpen(true);
   }, [expandAllTrigger]);
-  
 
   return (
-    
     <section className="collapsible-section">
       <button
         type="button"
@@ -81,7 +78,7 @@ const ProfileCreationPage = () => {
   });
 
   const [education, setEducation] = useState([
-    { institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", location: ""},
+    { institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", location: "" },
   ]);
   const [workExperience, setWorkExperience] = useState([
     { title: "", company: "", startDate: "", endDate:"", description: [""], location: "" },
@@ -104,7 +101,7 @@ const ProfileCreationPage = () => {
         }
         checkAuth()
     },[userLoggedIn,navigate,loading])
-    
+
   // Load data from db
   useEffect(() => {
     const loadData = async () =>{
@@ -120,28 +117,28 @@ const ProfileCreationPage = () => {
             email: email
           });
           setEducation(
-            profile.education && profile.education.length > 0 
-              ? profile.education 
+            profile.education && profile.education.length > 0
+              ? profile.education
               : [{ institution: "", startDate: "", endDate:"", major: "", minor: "", degree: "", location: ""}]
           );
           setWorkExperience(
-            profile.work && profile.work.length > 0 
-              ? profile.work 
+            profile.work && profile.work.length > 0
+              ? profile.work
               : [{ title: "", company: "", startDate: "", endDate:"", description: [""], location: "" }]
-          );   
+          );
           setProjects(
             profile.projects && profile.projects.length > 0
-              ? profile.projects 
+              ? profile.projects
               : [{ title: "", tools: [""], startDate: "", endDate:"", descriptions: [""] }]
           );
           setSkills(
-            profile.skills && profile.skills.length > 0 
-              ? profile.skills 
+            profile.skills && profile.skills.length > 0
+              ? profile.skills
               : [""]
-          );  
+          );
         } catch (error) {
           console.log(error)
-        }  
+        }
       }
     }
     loadData()
@@ -152,23 +149,21 @@ const ProfileCreationPage = () => {
     const { name, value } = e.target;
     if (name === "phone") {
       const numericValue = value.replace(/[^0-9]/g, '');
-      setPersonalInfo({ ...personalInfo, [name]: numericValue });
-
+      setPersonalInfo(prev => ({ ...prev, [name]: numericValue }));
     } else {
-      setPersonalInfo({ ...personalInfo, [name]: value });
+      setPersonalInfo(prev => ({ ...prev, [name]: value }));
     }
-    setPersonalInfo({ ...personalInfo, [name]: value });
   };
   const handleEducationChange = (i, e) => {
     const { name, value } = e.target;
     const updated = [...education];
-    updated[i][name] = value;
+    updated[i] = { ...updated[i], [name]: value };
     setEducation(updated);
   };
   const handleWorkChange = (i, e) => {
     const { name, value } = e.target;
     const updated = [...workExperience];
-    updated[i][name] = value;
+    updated[i] = { ...updated[i], [name]: value };
     setWorkExperience(updated);
   };
   const handleDescChange = (expI, descI, e) => {
@@ -179,7 +174,7 @@ const ProfileCreationPage = () => {
   const handleProChange = (i, e) => {
     const { name, value } = e.target;
     const updated = [...projects];
-    updated[i][name] = value;
+    updated[i] = { ...updated[i], [name]: value };
     setProjects(updated);
   };
   const handleToolChange = (proI, toolI, e) => {
@@ -200,20 +195,15 @@ const ProfileCreationPage = () => {
     setSkills(updated);
   };
 
-  const [EduisChecked, EdusetIsChecked] = useState(false);
-  const [ExpisChecked, ExpsetIsChecked] = useState(false);
-  const [ProisChecked, ProsetIsChecked] = useState(false);
-
-
-
   // Add/remove
   const addEducation = () => {
-    const today = new Date().toISOString().split('T')[0];
-    setEducation([...education, { institution: "", dates: today, major: "", minor: "", degree: "", location: ""}]);
+    setEducation([
+      ...education,
+      { institution: "", startDate: "", endDate: "", major: "", minor: "", degree: "", location: "" }
+    ]);
   };
   const removeEducation = (i) => setEducation(education.filter((_, x) => x !== i));
   const addWork = () => {
-    const today = new Date().toISOString().split('T')[0];
     setWorkExperience([...workExperience, { title: "", company: "", startDate: "", endDate:"", description: [""], location: "" }]);
   };
   const removeWork = (i) => setWorkExperience(workExperience.filter((_, x) => x !== i));
@@ -228,7 +218,6 @@ const ProfileCreationPage = () => {
     setWorkExperience(updated);
   };
   const addPro = () => {
-    const today = new Date().toISOString().split('T')[0];
     setProjects([...projects, { title: "", tools: [""], startDate: "", endDate:"", descriptions: [""] }]);
   };
   const removePro = (i) => setProjects(projects.filter((_, x) => x !== i));
@@ -250,7 +239,7 @@ const ProfileCreationPage = () => {
   const removeResponsibilities = (proI, respI) => {
     const updated = [...projects];
     updated[proI].descriptions = updated[proI].descriptions.filter((_, i) => i !== respI);
-  setProjects(updated);
+    setProjects(updated);
   };
   const addSkill = () => setSkills([...skills, ""]);
   const removeSkill = (i) => setSkills(skills.filter((_, x) => x !== i));
@@ -278,19 +267,19 @@ const ProfileCreationPage = () => {
         }
         await axios.put(`http://localhost:5005/profile/${currentUser.uid}`, body)
         alert("updated profile")
-        navigate("/resumegeneration");  
+        navigate("/resumegeneration");
       } catch (error) {
         console.error(error)
       }
-      
+
     }
 
-    
+
   };
 
   return (
     <div style={{ backgroundColor: "#F7EBDF", minHeight: "100vh" }}>
-  
+
       {/* Logo only */}
       <img
         src={logo}
@@ -306,9 +295,8 @@ const ProfileCreationPage = () => {
         }}
       />
     <div className="page-container">
-      {/* <button className="back-to-gen">Back</button> */}
       <form onSubmit={handleSubmit} className="form">
-      <button 
+      <button
         onClick={() => navigate("/resumegeneration")}
         className="back-button-inline"
       >
@@ -328,19 +316,17 @@ const ProfileCreationPage = () => {
               <span className="asterisk">*</span>
             </div>
             <div className="required">
-              <input disabled name="email" type="email" placeholder="Email" value={personalInfo.email} onChange={handlePersonalChange} className="input input-half" required />
+              <input disabled name="email" type="email" placeholder="Email" value={personalInfo.email} className="input input-half" required />
               <span className="asterisk">*</span>
             </div>
             <div className="required">
               <input maxLength={10} type="number" name="phone" placeholder="Phone (numbers only)" value={personalInfo.phone} onChange={handlePersonalChange} className="input input-half" />
             </div>
             <div className="required">
-              <input  name="linkdin" placeholder="linkdin" value={personalInfo.linkedin} onChange={handlePersonalChange} className="input input-half" required />
-              <span className="asterisk">*</span>
+              <input  name="linkedin" placeholder="linkedin" value={personalInfo.linkedin} onChange={handlePersonalChange} className="input input-half"/>
             </div>
             <div className="required">
-              <input  name="github" placeholder="github" value={personalInfo.github} onChange={handlePersonalChange} className="input input-half" required />
-              <span className="asterisk">*</span>
+              <input  name="github" placeholder="github" value={personalInfo.github} onChange={handlePersonalChange} className="input input-half"/>
             </div>
           </div>
         </CollapsibleSection>
@@ -349,15 +335,13 @@ const ProfileCreationPage = () => {
           {education.map((edu, index) => (
             <div key={index} className="work-experience-item">
               <div className="required">
-              <Select className="dropdown"
+              <Select
                 name="institution"
                 placeholder="Search for an institution..."
-                options={collegeList} 
+                options={collegeList}
                 isClearable
                 isSearchable
-                required
-                value={collegeList.find(c => c.value === edu.institution)}
-                
+                value={collegeList.find(c => c.value === edu.institution) || null}
                 onChange={(selectedOption) => {
                   const value = selectedOption ? selectedOption.value : "";
                   const mockEvent = {
@@ -368,17 +352,18 @@ const ProfileCreationPage = () => {
                   };
                   handleEducationChange(index, mockEvent);
                 }}
-                
                 classNamePrefix="react-select"
+                className="dropdown"
               />
+              {/* hidden input to satisfy native required validation for react-select */}
+              <input type="hidden" required value={edu.institution} name={`institution-${index}`} />
               <span className="asterisk">*</span>
               </div>
-              <div className="input-grid" required>
+              <div className="input-grid">
                 <DatePicker
                   name="startDate"
                   placeholderText="Start Date (MM/YYYY)"
                   selected={edu.startDate ? new Date(edu.startDate.replace(/-/g, '/')) : null}
-                  
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
                     const mockEvent = {
@@ -389,15 +374,12 @@ const ProfileCreationPage = () => {
                     };
                     handleEducationChange(index, mockEvent);
                   }}
-                  
                   showMonthYearPicker
                   dateFormat="MM/yyyy"
                   maxDate={new Date()}
-                  
                   className="input input-half"
-                  required
                 />
-                {!EduisChecked && (
+                {! (edu.endDate === "Present") && (
                 <DatePicker
                   name="endDate"
                   placeholderText="End Date(MM/YYYY)"
@@ -420,21 +402,18 @@ const ProfileCreationPage = () => {
                   dateFormat="MM/yyyy"
                   maxDate={new Date()}
                   className="input input-half"
-                  required
                 />
               )}
 
-              {/* Present Checkbox */}
+              {/* Present Checkbox (per-entry) */}
               <label className="present-checkbox">
                 <input
                   type="checkbox"
-                  checked={EduisChecked}
+                  checked={edu.endDate === "Present"}
                   onChange={(e) => {
                     const updated = [...education];
                     const checked = e.target.checked;
-
-                    EdusetIsChecked(checked);
-                    updated[index].endDate = checked ? "Present" : "";
+                    updated[index] = { ...updated[index], endDate: checked ? "Present" : "" };
                     setEducation(updated);
                   }}
                 />
@@ -464,7 +443,6 @@ const ProfileCreationPage = () => {
                   value={edu.minor}
                   onChange={(e) => handleEducationChange(index, e)}
                   className="input input-half"
-                  
                 >
                   <option value="">Select a Minor</option>
                   {majorsList.map((minor)=>(
@@ -473,7 +451,6 @@ const ProfileCreationPage = () => {
                     </option>
                   ))}
                 </select>
-                
                 </div>
                 <div className="required">
                 <select
@@ -492,12 +469,11 @@ const ProfileCreationPage = () => {
                 </select>
                 <span className="asterisk">*</span>
                 </div>
+
                 <div className="required">
-                  <input  name="location" placeholder="location" value={edu.github} onChange={handleEducationChange} className="input input-half" required />
-                  <span className="asterisk">*</span>
+                  <input  name="location" placeholder="location" value={edu.location} onChange={(e) => handleEducationChange(index, e)} className="input input-half" />
                 </div>
               </div>
-              {/* <input type="number" name="gpa" placeholder="GPA" value={edu.gpa} onChange={(e) => handleEducationChange(index, e)} className="input input-half" /> */}
               <button type="button" onClick={() => removeEducation(index)} className="remove-button">Remove</button>
             </div>
           ))}
@@ -507,14 +483,20 @@ const ProfileCreationPage = () => {
         <CollapsibleSection title="Work Experience" expandAllTrigger={expandAllTrigger}>
           {workExperience.map((exp, index) => (
             <div key={index} className="work-experience-item">
+              <div className="required">
               <input name="title" placeholder="Job Title" value={exp.title} onChange={(e) => handleWorkChange(index, e)} className="input" required />
+              <span className="asterisk">*</span>
+              </div>
+
+              <div className="required">
               <input name="company" placeholder="Company" value={exp.company} onChange={(e) => handleWorkChange(index, e)} className="input" required />
+              <span className="asterisk">*</span>
+              </div>
+               
                <DatePicker
                   name="startDate"
                   placeholderText="Start Date(MM/YYYY)"
-                  
                   selected={exp.startDate ? new Date(exp.startDate.replace(/-/g, '/')) : null}
-                  
                   onChange={(date) => {
                     const value = date ? date.toISOString().split('T')[0] : "";
                     const mockEvent = {
@@ -525,15 +507,13 @@ const ProfileCreationPage = () => {
                     };
                     handleWorkChange(index, mockEvent);
                   }}
-                  
                   showMonthYearPicker
                   dateFormat="MM/yyyy"
                   maxDate={new Date()}
-                  
                   className="input input-half"
-                  required
+                  
                 />
-              {!ExpisChecked && (
+              {! (exp.endDate === "Present") && (
                 <DatePicker
                   name="endDate"
                   placeholderText="End Date(MM/YYYY)"
@@ -556,48 +536,59 @@ const ProfileCreationPage = () => {
                   dateFormat="MM/yyyy"
                   maxDate={new Date()}
                   className="input input-half"
-                  required
+                  
                 />
               )}
 
-              {/* Present Checkbox */}
+              {/* Present Checkbox (per-entry) */}
               <label className="present-checkbox">
                 <input
                   type="checkbox"
-                  checked={ExpisChecked}
+                  checked={exp.endDate === "Present"}
                   onChange={(e) => {
                     const updated = [...workExperience];
                     const checked = e.target.checked;
-
-                    ExpsetIsChecked(checked);
-                    updated[index].endDate = checked ? "Present" : "";
+                    updated[index] = { ...updated[index], endDate: checked ? "Present" : "" };
                     setWorkExperience(updated);
                   }}
                 />
                 Present
               </label>
+
+              <input name="location" placeholder="Location" value={exp.location} onChange={(e) => handleWorkChange(index, e)} className="input" />
+
               {exp.description.map((desc, descI) => (
               <div key={descI} className="list-item-container">
-                <input placeholder="Description" value={desc} onChange={(e) => handleDescChange(index, descI, e)} className="input input-flex"/>
+                <div className="required" style={{ flex: 1 }}> 
+                  <input placeholder="Description" value={desc} onChange={(e) => handleDescChange(index, descI, e)} className="input input-flex" required/>
+                  <span className="asterisk">*</span>
+                </div>
+
                 <button type="button" onClick={() => removeDescription(index, descI)} className="remove-button">Remove</button>
               </div>
             ))}
-            <button type="button" onClick={() => addDescription(index)} className="add-button">Add Descrptions</button>
-              <input name="location" placeholder="Location" value={exp.location} onChange={(e) => handleWorkChange(index, e)} className="input" />
+
+            <button type="button" onClick={() => addDescription(index)} className="add-button">Add Description </button>
               <button type="button" onClick={() => removeWork(index)} className="remove-button">Remove</button>
             </div>
           ))}
           <button type="button" onClick={addWork} className="add-button">Add Work Experience</button>
         </CollapsibleSection>
         {/* Projects */}
-        {/* !!! */}
         <CollapsibleSection title="Projects" expandAllTrigger={expandAllTrigger}>
           {projects.map((pro, index) => (
             <div key={index} className="work-experience-item">
-            <input name="title" placeholder="Project Title" value={pro.title} onChange={(e) => handleProChange(index, e)} className="input" required />
+              <div className="required">
+                <input name="title" placeholder="Project Title" value={pro.title} onChange={(e) => handleProChange(index, e)} className="input" required />
+                <span className="asterisk">*</span>
+              </div>
+            
             {pro.tools.map((tool, toolI) => (
               <div key={toolI} className="list-item-container">
-                <input placeholder="Tools" value={tool} onChange={(e) => handleToolChange(index, toolI, e)} className="input input-flex" require/>
+                <div className="required" style={{ flex: 1 }}>
+                  <input placeholder="Tools" value={tool} onChange={(e) => handleToolChange(index, toolI, e)} className="input input-flex" required/>
+                  <span className="asterisk">*</span>
+                </div>
                 <button type="button" onClick={() => removeTool(index, toolI)} className="remove-button">Remove</button>
               </div>
             ))}
@@ -605,28 +596,24 @@ const ProfileCreationPage = () => {
             <DatePicker
               name="startDate"
               placeholderText="Start Date(MM/YYYY)"
-                  
-                  selected={pro.startDate ? new Date(pro.startDate.replace(/-/g, '/')) : null}
-                  
-                  onChange={(date) => {
-                    const value = date ? date.toISOString().split('T')[0] : "";
-                    const mockEvent = {
-                      target: {
-                        name: "startDate",
-                        value: value
-                      }
-                    };
-                    handleProChange(index, mockEvent);
-                  }}
-                  
-                  showMonthYearPicker
-                  dateFormat="MM/yyyy"
-                  maxDate={new Date()}
-                  
-                  className="input input-half"
-                  required
-                />
-                {!ProisChecked && (
+              selected={pro.startDate ? new Date(pro.startDate.replace(/-/g, '/')) : null}
+              onChange={(date) => {
+                const value = date ? date.toISOString().split('T')[0] : "";
+                const mockEvent = {
+                  target: {
+                    name: "startDate",
+                    value: value
+                  }
+                };
+                handleProChange(index, mockEvent);
+              }}
+              showMonthYearPicker
+              dateFormat="MM/yyyy"
+              maxDate={new Date()}
+              className="input input-half"
+              
+            />
+                {! (pro.endDate === "Present") && (
                   <DatePicker
                     name="endDate"
                     placeholderText="End Date(MM/YYYY)"
@@ -649,21 +636,19 @@ const ProfileCreationPage = () => {
                     dateFormat="MM/yyyy"
                     maxDate={new Date()}
                     className="input input-half"
-                    required
+                    
                   />
                 )}
 
-                {/* Present Checkbox */}
+                {/* Present Checkbox (per-entry) */}
                 <label className="present-checkbox">
                   <input
                     type="checkbox"
-                    checked={ProisChecked}
+                    checked={pro.endDate === "Present"}
                     onChange={(e) => {
                       const updated = [...projects];
                       const checked = e.target.checked;
-
-                      ProsetIsChecked(checked);
-                      updated[index].endDate = checked ? "Present" : "";
+                      updated[index] = { ...updated[index], endDate: checked ? "Present" : "" };
                       setProjects(updated);
                     }}
                   />
@@ -671,11 +656,15 @@ const ProfileCreationPage = () => {
               </label>
             {pro.descriptions.map((resp, respI) => (
               <div key={respI} className="list-item-container">
-                <input placeholder="Project Description" value={resp} onChange={(e) => handleRespChange(index, respI, e)} className="input input-flex" required/>
+                <div className="required" style={{ flex: 1 }}>
+                  <input placeholder="Project Description" value={resp} onChange={(e) => handleRespChange(index, respI, e)} className="input input-flex" required/>
+                  <span className="asterisk">*</span>
+                </div>
+                
                 <button type="button" onClick={() => removeResponsibilities(index, respI)} className="remove-button">Remove</button>
               </div>
             ))}
-            <button type="button" onClick={() => addResponsibilities(index)} className="add-button">Add Responsibilities</button>
+            <button type="button" onClick={() => addResponsibilities(index)} className="add-button">Add Description</button>
             <button type="button" onClick={() => removePro(index)} className="remove-button">Remove</button>
             </div>
           ))}
@@ -685,7 +674,11 @@ const ProfileCreationPage = () => {
         <CollapsibleSection title="Skills" expandAllTrigger={expandAllTrigger}>
           {skills.map((skill, i) => (
             <div key={i} className="list-item-container">
-              <input placeholder="Skill" value={skill} onChange={(e) => handleSkillChange(i, e)} className="input input-flex" required/>
+              <div className="required" style={{ flex: 1 }}>
+                <input placeholder="Skill" value={skill} onChange={(e) => handleSkillChange(i, e)} className="input input-flex" required/>
+                <span className="asterisk">*</span>
+              </div>
+              
               <button type="button" onClick={() => removeSkill(i)} className="remove-button">Remove</button>
             </div>
           ))}
