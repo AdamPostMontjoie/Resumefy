@@ -58,13 +58,15 @@ def rank_relevance(user_profile:UserProfile,new_job:NewJob):
     target_job_desc = model.encode(new_job.description,convert_to_tensor=True)
 
     work = user_profile.work
-    projects = user_profile.projects
+    projects = user_profile.projects or []
     skills = user_profile.skills
 
     encoded_job_titles = model.encode([job.title for job in work], convert_to_tensor=True)
     encoded_job_descs = model.encode([" ".join(job.description) for job in work],convert_to_tensor=True)
     encoded_skills = model.encode(skills, convert_to_tensor=True)
-    encoded_projects = model.encode([" ".join(project.descriptions) for project in projects], convert_to_tensor=True)
+
+    if projects: 
+        encoded_projects = model.encode([" ".join(project.descriptions) for project in projects], convert_to_tensor=True)
 
     #job compares both title and description
     job_title_similarities = model.similarity(target_job_title,encoded_job_titles)
@@ -72,7 +74,8 @@ def rank_relevance(user_profile:UserProfile,new_job:NewJob):
 
     #skills and projects only compare with description
     skill_similarities = model.similarity(target_job_desc,encoded_skills)
-    project_similarities = model.similarity(target_job_desc,encoded_projects)
+    if projects:
+        project_similarities = model.similarity(target_job_desc,encoded_projects)
 
 
     #put skills together with rankings
@@ -97,19 +100,26 @@ def rank_relevance(user_profile:UserProfile,new_job:NewJob):
         all_rankings.append(final_score)
 
     #create project rankings
-    for i in range(len(project_similarities[0])):
-        project_rankings.append(project_similarities[0][i].item())
-        all_rankings.append(project_similarities[0][i].item())
+    if projects: 
+        for i in range(len(project_similarities[0])):
+            project_rankings.append(project_similarities[0][i].item())
+            all_rankings.append(project_similarities[0][i].item())
+    jobs_and_scores = list(zip(user_profile.work,job_rankings))
+    jobs_and_scores.sort(key=lambda x: x[1], reverse=True)
+
+    projects_and_scores = list(zip(projects,project_rankings))
+    projects_and_scores.sort(key=lambda x: x[1], reverse=True)
 
     if(len(all_rankings)> 5):
-        #if less than 5, no need to do anything, user profile can remain unchanged
 
         #fifth score is lowest acceptable
         lowest_score = sorted(all_rankings, reverse=True)[4]
 
-        jobs_and_scores = list(zip(user_profile.work,job_rankings))
-        projects_and_scores = list(zip(user_profile.projects,project_rankings))
         user_profile.work = [job[0] for job in jobs_and_scores if job[1] >= lowest_score]
         user_profile.projects = [project[0] for project in projects_and_scores if project[1] >= lowest_score]
+    else:
+        #if less than 5, still need to sort
+        user_profile.work = [job[0] for job in jobs_and_scores]
+        user_profile.projects = [project[0] for project in projects_and_scores]
 
     return user_profile

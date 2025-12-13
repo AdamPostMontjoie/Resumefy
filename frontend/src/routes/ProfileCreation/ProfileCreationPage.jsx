@@ -323,10 +323,10 @@ const ProfileCreationPage = () => {
               <input maxLength={10} type="number" name="phone" placeholder="Phone (numbers only)" value={personalInfo.phone} onChange={handlePersonalChange} className="input input-half" />
             </div>
             <div className="required">
-              <input  name="linkedin" placeholder="linkedin" value={personalInfo.linkedin} onChange={handlePersonalChange} className="input input-half"/>
+              <input  name="linkedin" placeholder="LinkedIn" value={personalInfo.linkedin} onChange={handlePersonalChange} className="input input-half"/>
             </div>
             <div className="required">
-              <input  name="github" placeholder="github" value={personalInfo.github} onChange={handlePersonalChange} className="input input-half"/>
+              <input  name="github" placeholder="Github" value={personalInfo.github} onChange={handlePersonalChange} className="input input-half"/>
             </div>
           </div>
         </CollapsibleSection>
@@ -586,7 +586,7 @@ const ProfileCreationPage = () => {
             {pro.tools.map((tool, toolI) => (
               <div key={toolI} className="list-item-container">
                 <div className="required" style={{ flex: 1 }}>
-                  <input placeholder="Tools" value={tool} onChange={(e) => handleToolChange(index, toolI, e)} className="input input-flex" required/>
+                  <input placeholder="Tool" value={tool} onChange={(e) => handleToolChange(index, toolI, e)} className="input input-flex" required/>
                   <span className="asterisk">*</span>
                 </div>
                 <button type="button" onClick={() => removeTool(index, toolI)} className="remove-button">Remove</button>

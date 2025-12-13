@@ -37,34 +37,33 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-// === HELPER: Map DB Data to Strict Python API Schema ===
+
 function mapToApiSchema(dbData) {
-  // 1. Find the raw profile object (handling nesting)
+  // raw profile object
   const raw = dbData.profile || dbData.userProfile?.profile || dbData;
 
-  // 2. Map Personal Info
+  //  Map Personal Info
   const p = raw.personal || {};
   const personal = {
     firstname: p.firstname || p.firstName || p['first name'] || "Jane",
     lastname: p.lastname || p.lastName || p['last name'] || "Doe",
     phone: p.phone || p.phoneNumber || "",
-    email: p.email || "no-email@example.com",
+    email: dbData.email || "no-email@example.com", //email needs to be pulled from top level of user object
     github: p.github || p.gitHub || null,
     linkedin: p.linkedin || p.linkedIn || null
   };
 
-  // 3. Map Work Items (Strictly map 'responsibilities' -> 'description')
+
   const work = (raw.work || []).map(w => ({
     title: w.title || "Untitled",
     company: w.company || "Unknown",
     startDate: w.startDate || w.beginningdate || "",
     endDate: w.endDate || w.endingdate || "",
     location: w.location || "",
-    // Python model expects List[str] called 'description'
     description: Array.isArray(w.description) ? w.description : (w.responsibilities || [])
   }));
 
-  // 4. Map Project Items (Strictly map 'stack' -> 'tools', 'details' -> 'descriptions')
+
   let rawProjects = [];
   if (Array.isArray(raw.projects)) {
     rawProjects = raw.projects;
@@ -102,8 +101,7 @@ function mapToApiSchema(dbData) {
   };
 }
 
-// === LATEX GENERATOR ===
-// Uses the standardized output from the Python API
+
 function generateLatex(data) {
   const escapeLatex = (str) => typeof str === 'string' ? str.replace(/([#\$%&_\{\}\\])/g, '\\$1') : '';
 
@@ -197,15 +195,13 @@ app.post('/api/generate', async (req, res) => {
   if (!userId) return res.status(400).json({ message: 'Missing userId' });
 
   try {
-    // 1. Fetch from Firebase
+
     const snap = await db.collection('users').doc(userId).get();
     if (!snap.exists) return res.status(404).json({ message: 'User not found' });
     const docData = snap.data();
 
-    // 2. Map to Strict Python API Schema
     const mappedProfile = mapToApiSchema(docData);
 
-    // 3. Prepare Payload for Python API
     const payload = {
       user_profile: mappedProfile,
       new_job: { title, description }
@@ -228,7 +224,6 @@ app.post('/api/generate', async (req, res) => {
       });
     }
 
-    // 4. Generate LaTeX and write to file
     const texFile = path.join(__dirname, 'resume.tex');
     const pdfFile = path.join(__dirname, 'resume.pdf');
 
@@ -240,11 +235,13 @@ app.post('/api/generate', async (req, res) => {
         ? 'pdflatex.exe'
         : '/Library/TeX/texbin/pdflatex';
 
-    // 5. Compile LaTeX
     exec(
       `${pdflatex} -interaction=nonstopmode -halt-on-error resume.tex`,
       { cwd: __dirname },
       (err, stdout, stderr) => {
+        try{
+
+        
         console.log('pdflatex stdout:', stdout);
         console.log('pdflatex stderr:', stderr);
 
@@ -255,22 +252,32 @@ app.post('/api/generate', async (req, res) => {
           });
         }
 
-        // 6. Clean up auxiliary files (keep PDF)
         ['resume.aux', 'resume.log', 'resume.out', 'resume.tex'].forEach(f => {
           const filePath = path.join(__dirname, f);
-          if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+          try {
+            const filePath = path.join(__dirname, f);
+            if (fs.existsSync(filePath)) {
+              fs.unlinkSync(filePath);
+            }
+          } catch (e) {
+            console.warn(`Warning: Failed to delete ${f} (likely locked):`, e.message);
+          }
         });
 
         return res.json({
           message: 'Resume generated!',
           url: 'http://localhost:5005/resume'
         });
+      } catch(err){
+        return res.status(500).json({ message: 'Internal server error during PDF processing.' });
+            
+      }
       }
     );
 
   } catch (error) {
     console.error('Server error:', error);
-    // Always return JSON with error details
+
     res.status(500).json({
       message: 'Internal server error',
       details: error.response?.data || error.message || error.toString()

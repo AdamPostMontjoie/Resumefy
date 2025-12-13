@@ -1,0 +1,16 @@
+To rebuild container
+docker build . -t relevance-ranker
+  docker tag relevance-ranker us-east4-docker.pkg.dev/resumefy-8e8fa/relevance-ranker/api:v3
+  
+docker push us-east4-docker.pkg.dev/resumefy-8e8fa/relevance-ranker/api:v3      
+
+
+To Redeploy
+gcloud run deploy resume-ranker \
+  --image us-east4-docker.pkg.dev/resumefy-8e8fa/relevance-ranker/api:v3 \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --memory 2Gi \
+  --port 8080 \
+  --timeout 300
