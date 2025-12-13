@@ -37,10 +37,10 @@ class ProjectItem(BaseModel):
 
 class UserProfile(BaseModel):
     personal: PersonalInfo
-    work: List[WorkItem] = []
-    projects: List[ProjectItem] = [] 
-    education: List[EducationItem] = []
-    skills: List[str] = [] 
+    work: Optional[List[WorkItem]] = None
+    projects: Optional[List[ProjectItem]] = None
+    education: Optional[List[EducationItem]] = None
+    skills: Optional[List[str]] = None
 
 class NewJob(BaseModel):
     title:str

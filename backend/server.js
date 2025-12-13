@@ -194,55 +194,87 @@ function generateLatex(data) {
 // === API ROUTES ===
 app.post('/api/generate', async (req, res) => {
   const { userId, title, description } = req.body;
-  if (!userId) return res.status(400).send('Missing userId');
+  if (!userId) return res.status(400).json({ message: 'Missing userId' });
 
   try {
     // 1. Fetch from Firebase
     const snap = await db.collection('users').doc(userId).get();
-    if (!snap.exists) return res.status(404).send('User not found');
+    if (!snap.exists) return res.status(404).json({ message: 'User not found' });
     const docData = snap.data();
-    
+
     // 2. Map to Strict Python API Schema
     const mappedProfile = mapToApiSchema(docData);
-    
-    // 3. Prepare Payload (Strict Snake_Case keys as per FastAPI signature)
+
+    // 3. Prepare Payload for Python API
     const payload = {
       user_profile: mappedProfile,
-      new_job: {
-        title: title,
-        description: description
-      }
+      new_job: { title, description }
     };
 
-    console.log("Sending clean payload to ranker...");
-    
-    //  Send to External Python API
-    const response = await axios.post("https://resume-ranker-340638164003.us-central1.run.app/", payload);
-    const optimizedProfile = response.data; 
+    console.log("Sending payload to ranker...");
 
-    //  Generate PDF
+    let optimizedProfile;
+    try {
+      const response = await axios.post(
+        "https://resume-ranker-340638164003.us-central1.run.app/",
+        payload
+      );
+      optimizedProfile = response.data;
+    } catch (err) {
+      console.error("Python API error:", err.message || err);
+      return res.status(500).json({
+        message: 'Failed to call Python ranking API',
+        details: err.response?.data || err.message
+      });
+    }
+
+    // 4. Generate LaTeX and write to file
     const texFile = path.join(__dirname, 'resume.tex');
     const pdfFile = path.join(__dirname, 'resume.pdf');
-    
-    fs.writeFileSync(texFile, generateLatex(optimizedProfile).replace(/\r\n/g, '\n').replace(/\r/g, '\n'), 'utf8');
 
-    exec(`/Library/TeX/texbin/pdflatex -interaction=nonstopmode -halt-on-error resume.tex`, { cwd: __dirname }, (err, stdout, stderr) => {
-      // Clean up aux files
-      ['resume.aux', 'resume.log', 'resume.tex', 'resume.out'].forEach(f => {
-        if (fs.existsSync(path.join(__dirname, f))) fs.unlinkSync(path.join(__dirname, f));
-      });
+    const texContent = generateLatex(optimizedProfile).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    fs.writeFileSync(texFile, texContent, 'utf8');
 
-      if (err) {
-        console.error('Latex error:', stdout);
-        return res.status(500).send('Resume generation failed!');
+    const pdflatex =
+      process.platform === 'win32'
+        ? 'pdflatex.exe'
+        : '/Library/TeX/texbin/pdflatex';
+
+    // 5. Compile LaTeX
+    exec(
+      `${pdflatex} -interaction=nonstopmode -halt-on-error resume.tex`,
+      { cwd: __dirname },
+      (err, stdout, stderr) => {
+        console.log('pdflatex stdout:', stdout);
+        console.log('pdflatex stderr:', stderr);
+
+        if (err) {
+          return res.status(500).json({
+            message: 'Resume generation failed!',
+            latexError: stderr || stdout
+          });
+        }
+
+        // 6. Clean up auxiliary files (keep PDF)
+        ['resume.aux', 'resume.log', 'resume.out', 'resume.tex'].forEach(f => {
+          const filePath = path.join(__dirname, f);
+          if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        });
+
+        return res.json({
+          message: 'Resume generated!',
+          url: 'http://localhost:5005/resume'
+        });
       }
-      return res.json({ message: 'Resume generated!', url: 'http://localhost:5005/resume' });
-    });
+    );
 
   } catch (error) {
-    // Detailed error logging for debugging
-    console.error('API Error Details:', JSON.stringify(error.response?.data || error.message, null, 2));
-    res.status(500).send('Internal server error');
+    console.error('Server error:', error);
+    // Always return JSON with error details
+    res.status(500).json({
+      message: 'Internal server error',
+      details: error.response?.data || error.message || error.toString()
+    });
   }
 });
 
